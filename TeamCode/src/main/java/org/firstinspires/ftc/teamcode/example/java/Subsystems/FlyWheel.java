@@ -41,7 +41,7 @@ public class FlyWheel {
         pidfController.setKP(kP);
         pidfController.setKI(kI);
         pidfController.setKD(kD);
-        velocity = (flyMotorRight.getCurrentPosition() - previousPosition)/(System.currentTimeMillis() - previousTime); // average rate of change over a small time frame. DIY derivative fr
+        velocity = (flyMotorRight.getCurrentPosition() - previousPosition)/ (double)((System.currentTimeMillis() - previousTime)/1000); // average rate of change over a small time frame. DIY derivative fr
         double power = 0;
         switch (currentState) {
             case RESTING:
