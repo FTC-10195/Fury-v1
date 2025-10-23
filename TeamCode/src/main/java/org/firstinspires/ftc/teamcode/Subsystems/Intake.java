@@ -15,8 +15,8 @@ public class Intake {
 
 
     public States currentState = States.OFF;
-    public static double intakePower = .9;
-    public static double ejectPower = -.9;
+    public static double intakePower = 1;
+    public static double ejectPower = -1;
 
 
     public void setState(States newStates){

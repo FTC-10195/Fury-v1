@@ -38,7 +38,6 @@ public class Flywheel {
         currentState = newState;
     }
 
-    long velocity = 0;
     public void update() {
         switch (currentState) {
             case RESTING:
@@ -57,6 +56,6 @@ public class Flywheel {
         }
     }
     public void status (Telemetry telemetry) {
-        telemetry.addData("velocity", velocity);
+        telemetry.addData("velocity", flywheel.getVelocity());
     }
 }
