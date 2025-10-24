@@ -77,7 +77,7 @@ public class Webcam {
         P,
         G
     }
-    States currentState = States.OFF;
+    States currentState = States.ON;
     Colors[] colorPattern;
     public boolean colorPatternFound = false;
     Pose3D robotPose;
@@ -282,6 +282,8 @@ public class Webcam {
         }   // end for() loop
 
         // Add "key" information to telemetry
+        telemetry.addData("Pattern",colorPattern);
+        telemetry.addData("Camera State", currentState);
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
 
