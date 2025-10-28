@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
 public class Kicker {
-    public enum ServoState {
+    public enum States {
         SHOOTING,
         RETURNING,
         RESTING,
@@ -15,36 +15,36 @@ public class Kicker {
     public static long waitTime = 500;
     long timeSnapshot = System.currentTimeMillis();
 
-    public ServoState currentServoState = ServoState.RESTING;
+    public States currentState = States.RESTING;
+
     Servo KickerServo;
     public void initiate(HardwareMap hardwareMap) {
         KickerServo = hardwareMap.servo.get("kicker");
-
     }
     public static double servoShootingPos = 0.33;
     public static double servoRestingPos = 0.5;
-    public void setState(ServoState newState) {
-        currentServoState = newState;
-        if (currentServoState == ServoState.SHOOTING){
+    public void setState(States newState) {
+        currentState = newState;
+        if (currentState == States.SHOOTING){
             timeSnapshot = System.currentTimeMillis();
         }
     }
-    public ServoState getCurrentServoState() {
-        return currentServoState;
+    public States getCurrentServoState() {
+        return currentState;
     }
     public void update() {
-        switch (currentServoState) {
+        switch (currentState) {
             case SHOOTING:
                 KickerServo.setPosition(servoShootingPos);
                 if (System.currentTimeMillis() - timeSnapshot > waitTime){
-                    currentServoState = ServoState.RETURNING;
+                    currentState = States.RETURNING;
                     timeSnapshot = System.currentTimeMillis();
                 }
                 break;
             case RETURNING:
                 KickerServo.setPosition(servoRestingPos);
                 if (System.currentTimeMillis() - timeSnapshot > waitTime){
-                    currentServoState = ServoState.RETURNING;
+                    currentState = States.RETURNING;
                 }
                 break;
             case RESTING:

@@ -30,10 +30,10 @@ public class CameraTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         State currentState = State.RESTING;
         Follower follower;
-        Webcam webcam = new Webcam();
-        webcam.preInitiate(hardwareMap, telemetry);
         waitForStart();
         if (isStopRequested()) return;
+        Webcam webcam = new Webcam();
+        webcam.initiate(hardwareMap);
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(0, 0, 0));
         Drivetrain drivetrain = new Drivetrain();
@@ -64,8 +64,10 @@ public class CameraTest extends LinearOpMode {
 
             FtcDashboard.getInstance().sendTelemetryPacket(telemetryPacket);
             telemetry.addData("Pinpoint Pos", follower.getPose());
+            telemetry.addData("Webcam Pos",webcam.getPose());
             telemetry.addData("State", currentState);
             telemetry.update();
         }
+        webcam.clearSave();
     }
 }

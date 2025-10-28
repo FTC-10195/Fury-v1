@@ -34,17 +34,12 @@ import android.util.Size;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -89,6 +84,29 @@ public class Webcam {
     Colors[] colorPattern;
     public boolean colorPatternFound = false;
     public boolean localizerUpdated = false;
+
+    //Static fields for saving data. Auto -> TeleOp
+    //Only apply save if saved is true. What if robot DC during auto?
+    public static boolean saved = false;
+    static Pose3D savedRobotPose;
+    //Save at the end of auto
+    public void save(){
+        //For debugging only..
+        robotPose = new Pose3D(new Position(DistanceUnit.INCH,100.0, 100.0,100.0,100),new YawPitchRollAngles(AngleUnit.RADIANS,100,100,100,100));
+        //pose above is just to test saving the data works
+        savedRobotPose = robotPose;
+        saved = true;
+    }
+
+    public void applySave(){
+        robotPose = savedRobotPose;
+    }
+    //Clear at the end of tele
+    public void clearSave(){
+        saved = false;
+    }
+
+
     public static double robotSize = 18;
     Pose3D robotPose;
 
@@ -157,14 +175,6 @@ public class Webcam {
      */
     private VisionPortal visionPortal;
 
-    public void preInitiate(HardwareMap hardwareMap, Telemetry telemetry) {
-        initAprilTag(hardwareMap);
-
-        // Wait for the DS start button to be touched.
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch START to start OpMode");
-        telemetry.update();
-    }
 
     public void update(Telemetry telemetry, TelemetryPacket telemetryPacket) {
 
@@ -178,8 +188,10 @@ public class Webcam {
     /**
      * Initialize the AprilTag processor.
      */
-    private void initAprilTag(HardwareMap hardwareMap) {
-
+    public void initiate(HardwareMap hardwareMap) {
+        if (saved){
+            applySave();
+        }
         // Create the AprilTag processor.
         aprilTag = new AprilTagProcessor.Builder()
 

@@ -88,22 +88,22 @@ public class PedroSmallT extends LinearOpMode {
                     break;
                 case 2:
                     if (flywheel.IsReady && timePassed > 2000){
-                        kicker.setState(Kicker.ServoState.SHOOTING);
+                        kicker.setState(Kicker.States.SHOOTING);
                         trigger.setState(Trigger.States.SHOOTING);
                         setPathState(pathState+1);
                     }
                     break;
                 case 3:
                     if (timePassed > 700){
-                        kicker.setState(Kicker.ServoState.SHOOTING);
+                        kicker.setState(Kicker.States.SHOOTING);
                         setPathState(pathState+1);
                     }
                 case 4:
                     if (timePassed > 700){
-                        kicker.setState(Kicker.ServoState.SHOOTING);
+                        kicker.setState(Kicker.States.SHOOTING);
                         flywheel.setState(Flywheel.States.RESTING);
                         trigger.setState(Trigger.States.RESTING);
-                        kicker.setState(Kicker.ServoState.RESTING);
+                        kicker.setState(Kicker.States.RESTING);
                         follower.followPath(park1);
                         setPathState(pathState+1);
                     }
