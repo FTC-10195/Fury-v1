@@ -29,6 +29,11 @@
 
 package org.firstinspires.ftc.teamcode.Subsystems;
 
+import android.util.Size;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -68,37 +73,49 @@ import java.util.List;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
+@Config
 public class Webcam {
-    public enum States{
+    public enum States {
         ON,
         OFF
     }
-    public enum Colors{
+
+    public enum Colors {
         P,
         G
     }
+
     States currentState = States.ON;
     Colors[] colorPattern;
     public boolean colorPatternFound = false;
+    public boolean localizerUpdated = false;
+    public static double robotSize = 18;
     Pose3D robotPose;
-    public void setState(States newState){
+
+    public void setState(States newState) {
         currentState = newState;
     }
-    public States getState(){
-        return  currentState;
+
+    public States getState() {
+        return currentState;
     }
-    public Pose3D getPose(){
+
+    public Pose3D getPose() {
         return robotPose;
     }
-    public void setPose(Pose3D newPose){
+
+    public void setPose(Pose3D newPose) {
         robotPose = newPose;
     }
-    public Colors[] getColorPattern(){
+
+    public Colors[] getColorPattern() {
         return colorPattern;
     }
-    public void setColorPattern(Colors[] newPattern){
+
+    public void setColorPattern(Colors[] newPattern) {
         colorPattern = newPattern;
     }
+
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
     /**
@@ -126,9 +143,9 @@ public class Webcam {
      * to +/-90 degrees if it's vertical, or 180 degrees if it's upside-down.
      */
     private Position cameraPosition = new Position(DistanceUnit.INCH,
-            0, 0, 0, 0);
+            -3, 12, -3, 0);
     private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
-            0, -90, 0, 0);
+            0, -45, 180, 0); //Camera is backwards, about 45
 
     /**
      * The variable to store our instance of the AprilTag processor.
@@ -149,11 +166,12 @@ public class Webcam {
         telemetry.update();
     }
 
-    public void update(Telemetry telemetry) {
+    public void update(Telemetry telemetry, TelemetryPacket telemetryPacket) {
 
-        telemetryAprilTag(telemetry);
+        telemetryAprilTag(telemetry, telemetryPacket);
     }
-    public void end(){
+
+    public void end() {
         visionPortal.close();
     }
 
@@ -192,45 +210,24 @@ public class Webcam {
         //aprilTag.setDecimation(3);
 
         // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
+        visionPortal = new VisionPortal.Builder()
+                .addProcessors(aprilTag)
+                .setCameraResolution(new Size(320,240))
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+                .build();
 
-        // Set the camera (webcam vs. built-in RC phone camera).
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
-        }
 
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        //builder.setCameraResolution(new Size(640, 480));
 
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        //builder.enableLiveView(true);
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //builder.setAutoStopLiveView(false);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        //visionPortal.setProcessorEnabled(aprilTag, true);
+        FtcDashboard.getInstance().startCameraStream(visionPortal, 30);
 
     }   // end method initAprilTag()
 
     /**
      * Add telemetry about AprilTag detections.
      */
-    private void telemetryAprilTag(Telemetry telemetry) {
-
+    private void telemetryAprilTag(Telemetry telemetry, TelemetryPacket telemetryPacket) {
+    localizerUpdated = false;
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
 
@@ -241,6 +238,7 @@ public class Webcam {
                 // Only use tags that don't have Obelisk in them
                 //AKA BLUE OR RED GOAL, EITHER WORKS FOR LOCALIZATION
                 if (!detection.metadata.name.contains("Obelisk")) {
+                    localizerUpdated = true;
                     telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)",
                             detection.robotPose.getPosition().x,
                             detection.robotPose.getPosition().y,
@@ -253,23 +251,23 @@ public class Webcam {
                     robotPose = detection.robotPose;
                 }
                 //Obelisk Spotted, don't localize but get color pattern if needed
-                else{
+                else {
                     //No point in finding pattern if it's already found
-                    if (!colorPatternFound){
+                    if (!colorPatternFound) {
                         //21 == G,P,P
                         //22 == P,G,P
                         //23 = P,P,G
-                        switch (detection.id){
+                        switch (detection.id) {
                             case 21:
-                                colorPattern = new Colors[] {Colors.G,Colors.P,Colors.P};
+                                colorPattern = new Colors[]{Colors.G, Colors.P, Colors.P};
                                 colorPatternFound = true;
                                 break;
                             case 22:
-                                colorPattern = new Colors[] {Colors.P,Colors.G,Colors.P};
+                                colorPattern = new Colors[]{Colors.P, Colors.G, Colors.P};
                                 colorPatternFound = true;
                                 break;
                             case 23:
-                                colorPattern = new Colors[] {Colors.P,Colors.P,Colors.G};
+                                colorPattern = new Colors[]{Colors.P, Colors.P, Colors.G};
                                 colorPatternFound = true;
                                 break;
                         }
@@ -282,7 +280,7 @@ public class Webcam {
         }   // end for() loop
 
         // Add "key" information to telemetry
-        telemetry.addData("Pattern",colorPattern);
+        telemetry.addData("Pattern", colorPattern);
         telemetry.addData("Camera State", currentState);
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
