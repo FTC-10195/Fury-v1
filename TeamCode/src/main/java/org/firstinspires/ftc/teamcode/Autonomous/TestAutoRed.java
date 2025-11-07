@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.TeleOp;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -8,11 +8,10 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Kicker;
-import org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 
 @TeleOp
-public class SubsystemBased extends LinearOpMode {
+public class TestAutoRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
@@ -27,10 +26,8 @@ public class SubsystemBased extends LinearOpMode {
         TeamColor teamColor = new TeamColor();
         teamColor.initiate(hardwareMap);
         teamColor.setColor(TeamColor.Colors.RED);
-        Spindexer spindexer = new Spindexer();
-        spindexer.initiate(hardwareMap);
         if (isStopRequested()) {
-            teamColor.reset();
+            teamColor.save();
             return;
         }
 
@@ -42,13 +39,9 @@ public class SubsystemBased extends LinearOpMode {
             boolean triangle = gamepad1.x && !previousGamepad1.triangle;
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger <= 0.1;
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
-            boolean circle = gamepad1.circle && !previousGamepad1.circle;
             previousGamepad1.copy(gamepad1);
             if (triangle){
                 teamColor.switchColor();
-            }
-            if (LB){
-                spindexer.rotate();
             }
             if (RB){
                 switch (intake.getState()){
@@ -84,17 +77,15 @@ public class SubsystemBased extends LinearOpMode {
 
             if (RT) {
                 kicker.setState(Kicker.States.SHOOTING);
-                spindexer.shoot();
             }
 
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
             flywheel.update();
             intake.update();
-            spindexer.update(telemetry);
 
             teamColor.update(telemetry);
             telemetry.update();
         }
-        teamColor.reset();
+        teamColor.save();
     }
 }
