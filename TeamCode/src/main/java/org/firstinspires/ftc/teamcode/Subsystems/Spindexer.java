@@ -25,8 +25,8 @@ public class Spindexer {
         colorSensor = hardwareMap.colorSensor.get("spinColor");
         motor = hardwareMap.dcMotor.get("spin");
     }
-    public void setMotif(LimeLight.BallColors[] newMotif){
-        motif = newMotif;
+    public int getTargetBallNumber(){
+        return targetBallNumber;
     }
     public void shoot(){
         targetBallNumber = targetBallNumber + 1;
@@ -41,16 +41,18 @@ public class Spindexer {
             rotateNumber = 0;
         }
     }
+    public void setTargetColor(LimeLight.BallColors newColor){
+        targetColor = newColor;
+    }
 
     public void update(Telemetry telemetry){
         double power = 0;
         double error = motor.getTargetPosition() - motor.getCurrentPosition();
         doneRotating = Math.abs(error) < tolerance;
-        
+
         power = error * kP;
         motor.setPower(power);
-        currentColor = ColorSensors.getBallColor(colorSensor);
-        targetColor = motif[targetBallNumber];
+        currentColor = ColorSensors.getBallColor(colorSensor);;
 
         telemetry.addData("Spindexer Power", motor.getPower());
         telemetry.addData("Spindexer Target", motor.getTargetPosition());

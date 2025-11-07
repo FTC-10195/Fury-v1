@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 
@@ -29,6 +30,8 @@ public class SubsystemBased extends LinearOpMode {
         teamColor.setColor(TeamColor.Colors.RED);
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
+        LimeLight limeLight = new LimeLight();
+        limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
             teamColor.reset();
             return;
@@ -84,6 +87,8 @@ public class SubsystemBased extends LinearOpMode {
 
             if (RT) {
                 kicker.setState(Kicker.States.SHOOTING);
+                //Target color -> limelights motif -> which one? the one that the spindexer is on
+                spindexer.setTargetColor(limeLight.getMotif()[spindexer.getTargetBallNumber()]);
                 spindexer.shoot();
             }
 
@@ -91,6 +96,7 @@ public class SubsystemBased extends LinearOpMode {
             flywheel.update();
             intake.update();
             spindexer.update(telemetry);
+            limeLight.update(telemetry);
 
             teamColor.update(telemetry);
             telemetry.update();
