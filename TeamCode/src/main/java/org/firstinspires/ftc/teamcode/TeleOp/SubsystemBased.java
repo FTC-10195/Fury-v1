@@ -95,6 +95,7 @@ public class SubsystemBased extends LinearOpMode {
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
             flywheel.update();
             intake.update();
+            kicker.update();
             spindexer.update(telemetry);
             limeLight.update(telemetry);
 

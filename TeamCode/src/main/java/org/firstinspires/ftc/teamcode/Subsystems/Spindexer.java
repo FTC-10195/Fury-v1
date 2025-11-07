@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.opencv.core.Mat;
 
 @Config
 public class Spindexer {
@@ -18,16 +19,19 @@ public class Spindexer {
     States currentState = States.RESTING;
     ColorSensor colorSensor;
     DcMotor motor;
+    public static double maxPower = 0.05;
     public static int rotateTicks = 20;
     public static double kP = 0.001;
     public static int tolerance = 5;
+    public static int maxNumberOfRotationsPerBall = 2;
+    int numberOfShots = 0;
     int rotateNumber = 0;
+    int rotateSnapshot = 0;
     int targetBallNumber = 0;
     public boolean doneRotating = false;
     public boolean readyToFire = false;
     LimeLight.BallColors currentColor = LimeLight.BallColors.NONE;
     LimeLight.BallColors targetColor = LimeLight.BallColors.NONE;
-    LimeLight.BallColors[] motif;
     public void initiate(HardwareMap hardwareMap){
         colorSensor = hardwareMap.colorSensor.get("spinColor");
         motor = hardwareMap.dcMotor.get("spin");
@@ -37,6 +41,8 @@ public class Spindexer {
     }
     public void shoot(){
         currentState = States.SHOOTING;
+        rotateSnapshot = rotateNumber;
+        rotate();
         targetBallNumber = targetBallNumber + 1;
         if (targetBallNumber >= 3){
             targetBallNumber = 0;
@@ -47,20 +53,19 @@ public class Spindexer {
         currentColor = ColorSensors.getBallColor(colorSensor);
         rotateNumber = rotateNumber + 1;
         motor.setTargetPosition(motor.getTargetPosition() + rotateTicks);
-        if (rotateNumber >= 3){
-            rotateNumber = 0;
-        }
     }
     public void setTargetColor(LimeLight.BallColors newColor){
         targetColor = newColor;
     }
 
     public void update(Telemetry telemetry){
-        double power = 0;
         double error = motor.getTargetPosition() - motor.getCurrentPosition();
         doneRotating = Math.abs(error) < tolerance;
 
-        power = error * kP;
+        double power = error * kP;
+        if (Math.abs(power) > maxPower){
+            power = Math.signum(power) * maxPower;
+        }
         motor.setPower(power);
         switch (currentState){
             case RESTING:
@@ -68,9 +73,15 @@ public class Spindexer {
                 readyToFire = false;
                 break;
             case SHOOTING:
-                if (doneRotating && currentColor == targetColor){
+                //Done rotating and target color found OR too many rotations - ball isn't here, shoot anyways
+                //if (doneRotating && (currentColor == targetColor || rotateNumber - rotateSnapshot > maxNumberOfRotationsPerBall)){
+                if (doneRotating && (currentColor == targetColor)){
                     readyToFire = true;
                     currentState = States.RESTING;
+                    numberOfShots = numberOfShots + 1;
+                    //Ball shot, rotate number resets
+                    rotateNumber = 0;
+                    rotateSnapshot = 0;
                 }
                 break;
         }
@@ -78,12 +89,14 @@ public class Spindexer {
         telemetry.addData("Spindexer Power", motor.getPower());
         telemetry.addData("Spindexer Target", motor.getTargetPosition());
         telemetry.addData("Spindexer current", motor.getCurrentPosition());
-        telemetry.addData("Rotate Number",rotateNumber);
-        telemetry.addData("Target Number",targetBallNumber);
-        telemetry.addData("Ball Color",currentColor);
-        telemetry.addData("Target Color",targetColor);
+        telemetry.addData("Spindexer Rotate Number",rotateNumber);
+        telemetry.addData("Spindexer Rotate Snapshot",rotateSnapshot);
+        telemetry.addData("Spindexer Target Ball Number",targetBallNumber);
+        telemetry.addData("Spindexer Current Color",currentColor);
+        telemetry.addData("Spindexer Target Color",targetColor);
         telemetry.addData("Spindexer State",currentState);
         telemetry.addData("Spindexer readyToFire",readyToFire);
-        telemetry.addData("SpindexerDoneRotating",doneRotating);
+        telemetry.addData("Spindexer DoneRotating",doneRotating);
+        telemetry.addData("Spindexer Number of Shots",numberOfShots);
     }
 }
