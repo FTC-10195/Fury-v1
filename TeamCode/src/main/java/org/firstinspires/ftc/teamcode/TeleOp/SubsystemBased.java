@@ -18,20 +18,20 @@ public class SubsystemBased extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         waitForStart();
         Flywheel flywheel = new Flywheel();
-        flywheel.initiate(hardwareMap);
+     //   flywheel.initiate(hardwareMap);
         Intake intake = new Intake();
-        intake.initiate(hardwareMap);
+      //  intake.initiate(hardwareMap);
         Drivetrain drivetrain = new Drivetrain();
-        drivetrain.initiate(hardwareMap);
+      //  drivetrain.initiate(hardwareMap);
         Kicker kicker = new Kicker();
-        kicker.initiate(hardwareMap);
+      //  kicker.initiate(hardwareMap);
         TeamColor teamColor = new TeamColor();
-        teamColor.initiate(hardwareMap);
+      //  teamColor.initiate(hardwareMap);
         teamColor.setColor(TeamColor.Colors.RED);
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
         LimeLight limeLight = new LimeLight();
-        limeLight.initiate(hardwareMap);
+      //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
             teamColor.reset();
             return;
@@ -54,14 +54,7 @@ public class SubsystemBased extends LinearOpMode {
                 spindexer.rotate();
             }
             if (RB){
-                switch (intake.getState()){
-                    case ON:
-                        intake.setState(Intake.States.OFF);
-                        break;
-                    case OFF:
-                        intake.setState(Intake.States.ON);
-                        break;
-                }
+                spindexer.reset();
             }
             if (X){
                 switch (intake.getState()){
@@ -85,21 +78,17 @@ public class SubsystemBased extends LinearOpMode {
                 }
             }
 
-            if (RT) {
-                kicker.setState(Kicker.States.SHOOTING);
-                //Target color -> limelights motif -> which one? the one that the spindexer is on
-                spindexer.setTargetColor(limeLight.getMotif()[spindexer.getTargetBallNumber()]);
-                spindexer.shoot();
-            }
 
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
             flywheel.update();
             intake.update();
             kicker.update();
-            spindexer.update(telemetry);
+            spindexer.update();
             limeLight.update(telemetry);
 
             teamColor.update(telemetry);
+
+            spindexer.status(telemetry);
             telemetry.update();
         }
         teamColor.reset();
