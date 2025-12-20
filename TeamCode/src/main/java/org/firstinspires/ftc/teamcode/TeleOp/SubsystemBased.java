@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.Subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.Subsystems.Transfer.Kicker;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
-import org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
+import org.firstinspires.ftc.teamcode.Subsystems.Transfer.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 
 @TeleOp
@@ -23,8 +23,6 @@ public class SubsystemBased extends LinearOpMode {
       //  intake.initiate(hardwareMap);
         Drivetrain drivetrain = new Drivetrain();
       //  drivetrain.initiate(hardwareMap);
-        Kicker kicker = new Kicker();
-      //  kicker.initiate(hardwareMap);
         TeamColor teamColor = new TeamColor();
       //  teamColor.initiate(hardwareMap);
         teamColor.setColor(TeamColor.Colors.RED);
@@ -82,7 +80,6 @@ public class SubsystemBased extends LinearOpMode {
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
             flywheel.update();
             intake.update();
-            kicker.update();
             spindexer.update();
             limeLight.update(telemetry);
 
