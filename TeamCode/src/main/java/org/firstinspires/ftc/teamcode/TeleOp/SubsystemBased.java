@@ -27,7 +27,7 @@ public class SubsystemBased extends LinearOpMode {
       //  teamColor.setColor(TeamColor.Colors.RED);
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
-        spindexer.setMode(Spindexer.Modes.MANUAL);
+        spindexer.setMode(Spindexer.Modes.UNSORTED);
      //   LimeLight limeLight = new LimeLight();
       //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
@@ -53,6 +53,12 @@ public class SubsystemBased extends LinearOpMode {
             }
             if (RB){
                 spindexer.reset();
+            }
+            if (RT){
+                spindexer.setState(Spindexer.States.SHOOTING);
+            }
+            if (LT){
+                spindexer.setState(Spindexer.States.RESTING);
             }
 
 
