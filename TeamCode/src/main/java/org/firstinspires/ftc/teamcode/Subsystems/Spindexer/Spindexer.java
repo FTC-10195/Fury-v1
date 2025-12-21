@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 import org.firstinspires.ftc.teamcode.Subsystems.Timer;
-
+@Config
 public class Spindexer {
     public enum States {
         RESTING,
@@ -21,7 +22,7 @@ public class Spindexer {
         UNSORTED
     }
 
-    public static double startPos = .05; //"Zero pos of spindexr
+    public static double startPos = .11; //"Zero pos of spindexr
     public static double maxPos = .95; //When spindexer is at or over max -> reset
     public static double rotateTicks = .2; //How much the spindexer rotates for 1 slot
     public static long rotateWaitTime = 200; //How long it takes a spindexer to rotate 1 slot

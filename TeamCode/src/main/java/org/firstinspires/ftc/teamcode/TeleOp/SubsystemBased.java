@@ -16,22 +16,22 @@ public class SubsystemBased extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
-        Flywheel flywheel = new Flywheel();
+      //  Flywheel flywheel = new Flywheel();
      //   flywheel.initiate(hardwareMap);
-        Intake intake = new Intake();
+      //  Intake intake = new Intake();
       //  intake.initiate(hardwareMap);
         Drivetrain drivetrain = new Drivetrain();
-      //  drivetrain.initiate(hardwareMap);
-        TeamColor teamColor = new TeamColor();
+        drivetrain.initiate(hardwareMap);
+     //   TeamColor teamColor = new TeamColor();
       //  teamColor.initiate(hardwareMap);
-        teamColor.setColor(TeamColor.Colors.RED);
+      //  teamColor.setColor(TeamColor.Colors.RED);
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
         spindexer.setMode(Spindexer.Modes.MANUAL);
-        LimeLight limeLight = new LimeLight();
+     //   LimeLight limeLight = new LimeLight();
       //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
-            teamColor.reset();
+         //   teamColor.reset();
             return;
         }
 
@@ -46,7 +46,7 @@ public class SubsystemBased extends LinearOpMode {
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             previousGamepad1.copy(gamepad1);
             if (triangle){
-                teamColor.switchColor();
+            //    teamColor.switchColor();
             }
             if (LB){
                 spindexer.rotate();
@@ -54,40 +54,19 @@ public class SubsystemBased extends LinearOpMode {
             if (RB){
                 spindexer.reset();
             }
-            if (X){
-                switch (intake.getState()){
-                    case ON:
-                    case OFF:
-                        intake.setState(Intake.States.OUTTAKE);
-                        break;
-                    case OUTTAKE:
-                        intake.setState(Intake.States.OFF);
-                        break;
-                }
-            }
-            if (LT) {
-                switch (flywheel.getState()) {
-                    case RESTING:
-                        flywheel.setState(Flywheel.States.SPINNING);
-                        break;
-                    case SPINNING:
-                        flywheel.setState(Flywheel.States.RESTING);
-                        break;
-                }
-            }
 
 
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
-            flywheel.update();
-            intake.update();
+         //   flywheel.update();
+         //   intake.update();
             spindexer.update();
-            limeLight.update(telemetry);
+        //    limeLight.update(telemetry);
 
-            teamColor.update(telemetry);
+         //   teamColor.update(telemetry);
 
             spindexer.status(telemetry);
             telemetry.update();
         }
-        teamColor.reset();
+     //   teamColor.reset();
     }
 }
