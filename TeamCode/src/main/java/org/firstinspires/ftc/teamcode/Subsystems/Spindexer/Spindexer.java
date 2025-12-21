@@ -41,7 +41,7 @@ public class Spindexer {
     int sequence = 1;
 
     //Ball is what the color sensor reads
-    public LimeLight.BallColors ball = LimeLight.BallColors.NONE;
+    public LimeLight.BallColors savedBall = LimeLight.BallColors.NONE;
     int ballsIntaked = 0;
     int ballsShot = 0;
 
@@ -58,6 +58,7 @@ public class Spindexer {
         targetPos += rotateTicks;
         rotateTimer.setWait(rotateWaitTime);
         rotating = true;
+
         if (targetPos > maxPos) {
             reset();
         }
@@ -73,8 +74,19 @@ public class Spindexer {
 
     }
 
+    public void shoot() {
+        kicker.kick();
+        ballsShot++;
+    }
+    public void saveBall(){
+        //Read color sensor and save it
+        savedBall = colorSensor.getBallColor();
+    }
+
     public void intakeSequence() {
-        if (ballsIntaked >= 3 || targetPos >= maxPos) {
+        //Constantly read for intake
+        saveBall();
+        if (ballsIntaked >= 3) {
             ballsIntaked = 0;
             state = States.RESTING;
             reset();
@@ -83,7 +95,7 @@ public class Spindexer {
         switch (sequence) {
             case 1:
                 //if ball rotate
-                if (ball != LimeLight.BallColors.NONE) {
+                if (savedBall != LimeLight.BallColors.NONE) {
                     ballsIntaked++;
                     rotate();
                     sequence++;
@@ -97,20 +109,15 @@ public class Spindexer {
         }
     }
 
-    public void shoot() {
-        kicker.kick();
-        ballsShot++;
-    }
-
     public void chamberSequence() {
-        if (targetPos >= maxPos) {
-            ballsShot = 0;
-            state = States.RESTING;
-            reset();
+        //If spindexer is chambered then the job is complete, don't do anything
+        if (chambered){
             return;
         }
         switch (sequence) {
             case 1:
+                //Read what ball is in this slot
+                saveBall();
                 //Ball or no ball we rotate to the next slot
                 rotate();
                 sequence++;
@@ -119,20 +126,15 @@ public class Spindexer {
                 //If we are done rotating
                 if (!rotating) {
                     //If we have a ball
-                    if (ball != LimeLight.BallColors.NONE) {
+                    if (savedBall != LimeLight.BallColors.NONE) {
                         //Chambered!
                         chambered = true;
-                        sequence++;
-                    } else {
-                        //Keep spinning until you find the ball
-                        sequence = 1;
                     }
+                    //No target? this tries spinning again
+                    //target? then the job is done, chambered is true and this just resets sequence for the shooting sequence
+                    sequence  = 1;
                 }
                 break;
-            case 3:
-                //Do nothing, wait until shooting
-                break;
-
         }
     }
 
@@ -149,6 +151,8 @@ public class Spindexer {
         }
         switch (sequence) {
             case 1:
+                //Read what ball is in this slot
+                saveBall();
                 //Ball or no ball we rotate to the next slot
                 rotate();
                 sequence++;
@@ -157,7 +161,7 @@ public class Spindexer {
                 //If we are done rotating
                 if (!rotating) {
                     //If we have a ball
-                    if (ball != LimeLight.BallColors.NONE) {
+                    if (savedBall != LimeLight.BallColors.NONE) {
                         //Shooting
                         shoot();
                         sequence++;
@@ -178,7 +182,7 @@ public class Spindexer {
 
     public void rapidFireSequence() {
         //AKA unsorted shooting
-        if (ballsShot >= 3 || targetPos >= maxPos) {
+        if (ballsShot >= 3) {
             ballsShot = 0;
             state = States.RESTING;
             reset();
@@ -255,8 +259,6 @@ public class Spindexer {
                 return;
             }
         }
-        //Read color sensor
-        ball = colorSensor.getBallColor();
 
         //Manual means no automated, only rotate, reset, and shooting avalible
         if (mode == Modes.MANUAL) {
