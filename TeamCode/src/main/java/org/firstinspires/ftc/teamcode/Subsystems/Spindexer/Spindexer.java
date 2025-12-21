@@ -9,12 +9,16 @@ import org.firstinspires.ftc.teamcode.Subsystems.Timer;
 
 public class Spindexer {
     public enum States {
-        MANUAL,
         RESTING,
         INTAKING,
         CHAMBER,
-        SORTED_SHOOTING,
-        RAPID_FIRE
+        SHOOTING
+    }
+
+    public enum Modes {
+        MANUAL,
+        SORTED,
+        UNSORTED
     }
 
     public static double startPos = .05; //"Zero pos of spindexr
@@ -22,6 +26,7 @@ public class Spindexer {
     public static double rotateTicks = .2; //How much the spindexer rotates for 1 slot
     public static long rotateWaitTime = 200; //How long it takes a spindexer to rotate 1 slot
     States state = States.RESTING;
+    Modes mode = Modes.MANUAL;
     Servo rightServo; //Dominant
     Servo leftServo;
     Kicker kicker = new Kicker(); //Child subsystem because kicker is completely dependant on spindexer
@@ -210,6 +215,14 @@ public class Spindexer {
         return state;
     }
 
+    public void setMode(Modes newMode) {
+        mode = newMode;
+    }
+
+    public Modes getMode() {
+        return mode;
+    }
+
     public Kicker getKicker() {
         return kicker;
     }
@@ -246,7 +259,7 @@ public class Spindexer {
         ball = colorSensor.getBallColor();
 
         //Manual means no automated, only rotate, reset, and shooting avalible
-        if (state == States.MANUAL) {
+        if (mode == Modes.MANUAL) {
             return;
         }
 
@@ -261,11 +274,12 @@ public class Spindexer {
             case CHAMBER:
                 chamberSequence();
                 break;
-            case SORTED_SHOOTING:
-                sortedShootingSequence();
-                break;
-            case RAPID_FIRE:
-                rapidFireSequence();
+            case SHOOTING:
+                if (mode == Modes.SORTED) {
+                    sortedShootingSequence();
+                } else if (mode == Modes.UNSORTED) {
+                    rapidFireSequence();
+                }
                 break;
         }
     }

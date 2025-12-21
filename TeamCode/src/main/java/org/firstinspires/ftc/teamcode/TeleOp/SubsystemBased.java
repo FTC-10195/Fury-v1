@@ -27,7 +27,7 @@ public class SubsystemBased extends LinearOpMode {
         teamColor.setColor(TeamColor.Colors.RED);
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
-        spindexer.setState(Spindexer.States.MANUAL);
+        spindexer.setMode(Spindexer.Modes.MANUAL);
         LimeLight limeLight = new LimeLight();
       //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
