@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Subsystems.Transfer;
+package org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 
 @Config
 public class CSensor {
+    //Will tune thresholds more, hopefully it's this simple (GREEN VS BLUE) but it might not be
     public static int greenThresholdGreen = 100;
     public static int purpleThresholdBlue = 100;
     ColorSensor sensor;

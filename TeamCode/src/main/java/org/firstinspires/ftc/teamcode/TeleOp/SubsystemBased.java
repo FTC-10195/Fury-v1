@@ -7,9 +7,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.Subsystems.Transfer.Kicker;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
-import org.firstinspires.ftc.teamcode.Subsystems.Transfer.Spindexer;
+import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 
 @TeleOp
@@ -28,6 +27,7 @@ public class SubsystemBased extends LinearOpMode {
         teamColor.setColor(TeamColor.Colors.RED);
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
+        spindexer.setState(Spindexer.States.MANUAL);
         LimeLight limeLight = new LimeLight();
       //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {

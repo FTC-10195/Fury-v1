@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Subsystems.Transfer;
+package org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
 
 
 import com.acmerobotics.dashboard.config.Config;
@@ -32,9 +32,6 @@ public class Kicker {
         timer.setWait(waitTime);
     }
     public States getState(){
-        return currentState;
-    }
-    public States getCurrentServoState() {
         return currentState;
     }
     public void update() {
