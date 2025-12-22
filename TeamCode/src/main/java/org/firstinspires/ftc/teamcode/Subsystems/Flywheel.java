@@ -13,10 +13,13 @@ public class Flywheel {
         SPINNING,
         RESTING,
     }
-    public boolean IsReady = false;
+    public boolean isReady = false;
     public long timeShot = System.currentTimeMillis();
     public static long waitTime = 1500;
     public static double targetVelocity = 1600;
+    public static double kP = .001;
+    public static double tolerance = 100;
+
 
     public States getState() {
         return currentState;
@@ -39,23 +42,24 @@ public class Flywheel {
     }
 
     public void update() {
+        double power = 0;
         switch (currentState) {
             case RESTING:
-                flywheel.setPower(0);
-                IsReady = false;
-
+                isReady = false;
                 break;
             case SPINNING:
-                flywheel.setVelocity(targetVelocity);
-                if (System.currentTimeMillis() - timeShot > waitTime){
-                    IsReady = true;
+                //Pid controller
+                double error = targetVelocity - flywheel.getVelocity();
+                power = kP * error;
+                if (System.currentTimeMillis() - timeShot > waitTime || Math.abs(error) < tolerance){
+                    isReady = true;
                 }
                 break;
-
-
         }
+        flywheel.setPower(power);
     }
     public void status (Telemetry telemetry) {
         telemetry.addData("velocity", flywheel.getVelocity());
+        telemetry.addData("flywheelReady",isReady);
     }
 }
