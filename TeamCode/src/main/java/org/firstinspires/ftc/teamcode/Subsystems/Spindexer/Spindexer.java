@@ -22,11 +22,11 @@ public class Spindexer {
         UNSORTED
     }
 
-    public static double intakeStartPos = .11; //"Zero pos of spindexr
-    public static double shootingTicks = .1;
+    public static double intakeStartPos = .05; //"Zero pos of spindexr
+    public static double shootingTicks = .1; //60 degrees / 600 degrees per tick -> .1 ticks
     public static double shootingStartPos = intakeStartPos + shootingTicks;
-    public static double maxPos = .95; //When spindexer is at or over max -> reset
-    public static double rotateTicks = .2; //How much the spindexer rotates for 1 slot
+    public static double maxPos = 1; //When spindexer is at or over max -> reset
+    public static double rotateTicks = .2; //How much the spindexer rotates for 1 slot (120 degrees)
     public static long rotateWaitTime = 200; //How long it takes a spindexer to rotate 1 slot
     public static double maxDegrees = 600;
     static double degreesToTicks(double degree){
@@ -80,7 +80,7 @@ public class Spindexer {
         }
 
         targetPos += degreesToTicks(degree);
-        rotateTimer.setWait((long) degree/120 * rotateWaitTime);
+        rotateTimer.setWait(Math.abs((long) degree/120 * rotateWaitTime));
         rotating = true;
 
         if (targetPos > maxPos) {
@@ -294,7 +294,9 @@ public class Spindexer {
 
     public void initiate(HardwareMap hardwareMap) {
         rightServo = hardwareMap.servo.get("rspin");
+        rightServo.setDirection(Servo.Direction.REVERSE);
         leftServo = hardwareMap.servo.get("lspin");
+        leftServo.setDirection(Servo.Direction.REVERSE);
         colorSensor.initiate(hardwareMap);
         kicker.initiate(hardwareMap);
     }

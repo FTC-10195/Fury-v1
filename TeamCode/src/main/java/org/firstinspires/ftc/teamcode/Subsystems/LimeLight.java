@@ -26,14 +26,14 @@ public class LimeLight {
     public static int PPGId = 23;
 
     Limelight3A limelight;
-    TeamColor.Colors teamColor = TeamColor.Colors.RED;
+    Lights.TeamColors teamColor = Lights.TeamColors.RED;
 
     public void initiate(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(8);
         limelight.start();
     }
-    public void setTeamColor(TeamColor.Colors newColor){
+    public void setTeamColor(Lights.TeamColors newColor){
         teamColor = newColor;
     }
     public boolean motifId(int id){
@@ -49,7 +49,7 @@ public class LimeLight {
         }
     }
     public boolean colorId(int id){
-        return (teamColor.equals(TeamColor.Colors.RED) && id == redId) || (teamColor.equals(TeamColor.Colors.BLUE) && id == blueId);
+        return (teamColor.equals(Lights.TeamColors.RED) && id == redId) || (teamColor.equals(Lights.TeamColors.BLUE) && id == blueId);
     }
 
     public void update(Telemetry telemetry) {

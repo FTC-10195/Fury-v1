@@ -5,11 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
-import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
-import org.firstinspires.ftc.teamcode.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
+import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
-import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 
 @TeleOp
 public class SubsystemBased extends LinearOpMode {
@@ -22,16 +19,17 @@ public class SubsystemBased extends LinearOpMode {
       //  intake.initiate(hardwareMap);
         Drivetrain drivetrain = new Drivetrain();
         drivetrain.initiate(hardwareMap);
-     //   TeamColor teamColor = new TeamColor();
-      //  teamColor.initiate(hardwareMap);
-      //  teamColor.setColor(TeamColor.Colors.RED);
+        Lights lights = new Lights();
+        lights.initiate(hardwareMap);
+        lights.setTeamColor(Lights.TeamColors.RED);
+
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
         spindexer.setMode(Spindexer.Modes.UNSORTED);
      //   LimeLight limeLight = new LimeLight();
       //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
-         //   teamColor.reset();
+            lights.reset();
             return;
         }
 
@@ -40,25 +38,42 @@ public class SubsystemBased extends LinearOpMode {
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean X = gamepad1.cross && !previousGamepad1.cross;
-            boolean triangle = gamepad1.x && !previousGamepad1.triangle;
+            boolean triangle = gamepad1.triangle && !previousGamepad1.triangle;
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger <= 0.1;
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             previousGamepad1.copy(gamepad1);
             if (triangle){
-            //    teamColor.switchColor();
+                lights.switchTeamColor();
             }
             if (LB){
-                spindexer.rotate();
+                spindexer.rotateDegree(-60);
             }
             if (RB){
-                spindexer.reset();
+                spindexer.rotate();
             }
             if (RT){
-                spindexer.setState(Spindexer.States.SHOOTING);
+                spindexer.rotateDegree(60);
             }
             if (LT){
+                spindexer.reset();
                 spindexer.setState(Spindexer.States.RESTING);
+            }
+            if (X){
+                spindexer.setState(Spindexer.States.SHOOTING);
+            }
+            if (circle){
+                switch (lights.getMode()){
+                    case TEAM:
+                        lights.setMode(Lights.Mode.MOTIF);
+                        break;
+                    case MOTIF:
+                        lights.setMode(Lights.Mode.INTAKING);
+                        break;
+                    case INTAKING:
+                        lights.setMode(Lights.Mode.TEAM);
+                        break;
+                }
             }
 
 
@@ -68,11 +83,11 @@ public class SubsystemBased extends LinearOpMode {
             spindexer.update();
         //    limeLight.update(telemetry);
 
-         //   teamColor.update(telemetry);
+            lights.update(telemetry);
 
             spindexer.status(telemetry);
             telemetry.update();
         }
-     //   teamColor.reset();
+        lights.reset();
     }
 }
