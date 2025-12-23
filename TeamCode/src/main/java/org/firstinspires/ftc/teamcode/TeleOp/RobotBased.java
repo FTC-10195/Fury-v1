@@ -123,6 +123,8 @@ public class RobotBased extends LinearOpMode {
             spindexer.update();
         //    limeLight.update(telemetry);
 
+
+            telemetry.addData("State",state);
             lights.update(telemetry);
 
             spindexer.status(telemetry);

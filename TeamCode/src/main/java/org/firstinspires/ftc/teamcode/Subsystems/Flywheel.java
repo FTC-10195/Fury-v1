@@ -29,8 +29,10 @@ public class Flywheel {
 
     public States currentState = States.SPINNING;
     DcMotorEx flywheel;
+    DcMotorEx flywheel2;
     public void initiate(HardwareMap hardwareMap) {
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel2 = hardwareMap.get(DcMotorEx.class, "fly2");
     }
 
 
@@ -57,6 +59,7 @@ public class Flywheel {
                 break;
         }
         flywheel.setPower(power);
+        flywheel2.setPower(-power);
     }
     public void status (Telemetry telemetry) {
         telemetry.addData("velocity", flywheel.getVelocity());
