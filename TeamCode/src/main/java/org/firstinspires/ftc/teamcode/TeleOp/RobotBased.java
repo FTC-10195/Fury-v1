@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @TeleOp
 public class RobotBased extends LinearOpMode {
@@ -22,6 +24,7 @@ public class RobotBased extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         States state = States.RESTING;
         waitForStart();
+        Follower follower = Constants.createFollower(hardwareMap);
         Flywheel flywheel = new Flywheel();
         flywheel.initiate(hardwareMap);
         Intake intake = new Intake();
@@ -125,6 +128,11 @@ public class RobotBased extends LinearOpMode {
 
 
             telemetry.addData("State",state);
+            
+            telemetry.addData("X", follower.getPose().getX());
+            telemetry.addData("Y", follower.getPose().getY());
+            telemetry.addData("Heading",follower.getPose().getHeading());
+
             lights.update(telemetry);
 
             spindexer.status(telemetry);
