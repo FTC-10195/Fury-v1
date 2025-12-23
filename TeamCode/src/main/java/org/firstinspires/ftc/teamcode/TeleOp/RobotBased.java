@@ -62,7 +62,11 @@ public class RobotBased extends LinearOpMode {
                 case RESTING:
                     intake.setState(Intake.States.OFF);
                     flywheel.setState(Flywheel.States.RESTING);
-                    lights.setMode(Lights.Mode.TEAM);
+                    if (spindexer.getMode() == Spindexer.Modes.SORTED){
+                        lights.setMode(Lights.Mode.MOTIF);
+                    }else{
+                        lights.setMode(Lights.Mode.TEAM);
+                    }
                     if (LT){
                         state = States.INTAKING;
                         spindexer.setState(Spindexer.States.INTAKING);
@@ -84,7 +88,11 @@ public class RobotBased extends LinearOpMode {
                     }
                     break;
                 case PREPARING_TO_FIRE:
-                    lights.setMode(Lights.Mode.MOTIF);
+                    if (spindexer.getMode() == Spindexer.Modes.SORTED){
+                        lights.setMode(Lights.Mode.MOTIF);
+                    }else{
+                        lights.setMode(Lights.Mode.TEAM);
+                    }
                     intake.setState(Intake.States.OFF);
                     if (flywheel.isReady && spindexer.getState() == Spindexer.States.RESTING){
                         gamepad1.rumble(1,10,100);

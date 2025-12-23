@@ -15,8 +15,7 @@ public class Kicker {
         RETURNING,
         RESTING,
     }
-    public static long waitTime = 250;
-    long timeSnapshot = System.currentTimeMillis();
+    public static long waitTime = 200;
 
     public States currentState = States.RESTING;
     Timer timer = new Timer();
@@ -24,8 +23,9 @@ public class Kicker {
     Servo kicker;
     public void initiate(HardwareMap hardwareMap) {
         kicker = hardwareMap.servo.get("kicker");
+        kicker.setDirection(Servo.Direction.REVERSE);
     }
-    public static double servoShootingPos = 0.33;
+    public static double servoShootingPos = 0.75;
     public static double servoRestingPos = 0.5;
     public void kick(){
         currentState = States.SHOOTING;
@@ -56,5 +56,6 @@ public class Kicker {
     }
     public void status(Telemetry telemetry){
         telemetry.addData("Kicker State", getState());
+        telemetry.addData("Kicker Pos",kicker.getPosition());
     }
 }

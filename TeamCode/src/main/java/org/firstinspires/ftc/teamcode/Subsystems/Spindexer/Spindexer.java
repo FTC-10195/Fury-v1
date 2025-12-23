@@ -54,6 +54,7 @@ public class Spindexer {
     public LimeLight.BallColors savedBall = LimeLight.BallColors.NONE;
     int ballsIntaked = 0;
     int ballsShot = 0;
+    int rotations = 0; //number of 120 degree rotations
 
     //If this is true that means we can shoot the first shot in the shooting sequence
     boolean chambered = false;
@@ -65,13 +66,19 @@ public class Spindexer {
             return;
         }
 
+        if (targetPos > maxPos || rotations >= 2) {
+            reset();
+            return;
+        }
+
+        rotations++;
+
         targetPos += rotateTicks;
         rotateTimer.setWait(rotateWaitTime);
         rotating = true;
 
-        if (targetPos > maxPos) {
-            reset();
-        }
+
+
     }
     public void rotateDegree(int degree){
         //Already moving? don't rotate more
@@ -95,6 +102,7 @@ public class Spindexer {
         rotateTimer.setWait((long) (ticksPassed / rotateTicks * rotateWaitTime));
         targetPos = intakeStartPos;
         rotating = true;
+        rotations = 0;
 
     }
     public void rotateToShoot(){
@@ -152,85 +160,119 @@ public class Spindexer {
         if (chambered){
             return;
         }
+
         switch (sequence) {
             case 1:
-                //Read what ball is in this slot
                 saveBall();
+                //If target
                 if (savedBall != LimeLight.BallColors.NONE) {
                     //Shooting
-                    rotateDegree(180);
-                } else {
-                    rotate();
+                    rotateToShoot();
+                }else{
+                   rotate();
                 }
                 sequence++;
                 break;
             case 2:
-                //If we are done rotating
-                if (rotating) {
-                    return;
+                //This means the spindexer reset, and if it reset and the code reaches this point
+                //That means we can't find our target ball -> give up
+                //Might as well say chambered because when we shoot sorted we wont find it anyways
+                //HOWEVER, we must move it in position to shoot
+                if (rotations == 0){
+                    rotateToShoot();
+                    sequence++;
                 }
-
-                if (savedBall != LimeLight.BallColors.NONE) {
+                //Finished rotating
+                if (!rotating){
+                    //If target -> shoot
+                    if (savedBall != LimeLight.BallColors.NONE) {
+                        //Usually shoot here, just say chambered
+                        chambered = true;
+                    }//Not target? check again
+                    sequence = 1;
+                }
+                break;
+            case 3:
+                if (!rotating){
+                    sequence = 1;
                     chambered = true;
                 }
-                sequence = 1;
                 break;
         }
     }
 
+    boolean switchToUnsorted = false;
     public void sortedShootingSequence() {
         if (chambered) {
             //FIRE
             shoot();
+            sequence = -1;
         }
-        if (ballsShot >= 3 || targetPos >= degreesToTicks(360 + ticksToDegrees(intakeStartPos))) {
+        if (ballsShot >= 3) {
             ballsShot = 0;
             state = States.RESTING;
             reset();
             return;
         }
+        if (switchToUnsorted){
+            if (!rotating){
+                mode = Modes.UNSORTED;
+                sequence = 1;
+            }
+            return;
+        }
         switch (sequence) {
+            //-1 and 0 are special cases that is only accessible when chambered
+            case -1:
+                if (kicker.getState() == Kicker.States.RETURNING){
+                    reset();
+                    sequence++;
+                }
+                break;
+            case 0:
+                if (!rotating){
+                    sequence++;
+                }
+                break;
             case 1:
-                if (chambered){
-                    rotateDegree(-60);
-                    chambered = false;
-                }
-                if (rotating){
-                    return;
-                }
-                //Read what ball is in this slot
                 saveBall();
-                if (savedBall != LimeLight.BallColors.NONE) {
-                    //Shooting
-                    rotateDegree(180);
-                } else {
+                //If target -> rotate to shoot
+                if (savedBall != LimeLight.BallColors.NONE){
+                    rotateToShoot();
+                }else{
                     rotate();
+                }
+                //This means it reset and cant find target ball -> switch to rapid fire
+                if (rotations == 0){
+                    switchToUnsorted = true;
+                    return;
                 }
                 sequence++;
                 break;
             case 2:
-                if (rotating) {
-                    return;
-                }
-
-                if (savedBall != LimeLight.BallColors.NONE) {
-                    shoot();
-                    sequence++;
-                } else {
-                    sequence = 1;
+                //If ball
+                if (!rotating) {
+                    if (savedBall != LimeLight.BallColors.NONE) {
+                        shoot();
+                        sequence++;
+                    }else{
+                        sequence = 1;
+                    }
                 }
                 break;
             case 3:
-                //Done shooting?
-                if (kicker.getState() == Kicker.States.RETURNING) {
-                    rotateDegree(-60);
+                //Done shooting
+                if (kicker.getState() == Kicker.States.RETURNING){
+                    reset();
                     sequence++;
                 }
                 break;
             case 4:
-                if (!rotating) {
+                //Done rotating
+                if (!rotating){
                     sequence = 1;
                 }
+                break;
         }
     }
 
@@ -281,6 +323,7 @@ public class Spindexer {
     }
 
     public void setMode(Modes newMode) {
+        switchToUnsorted = false;
         mode = newMode;
     }
 

@@ -50,7 +50,8 @@ public class SubsystemBased extends LinearOpMode {
                 lights.switchTeamColor();
             }
             if (LB){
-                spindexer.rotateDegree(-60);
+                //spindexer.rotateDegree(-60);
+                spindexer.getKicker().kick();
             }
             if (RB){
                 spindexer.rotate();
