@@ -29,6 +29,7 @@ public class Spindexer {
     public static double rotateTicks = 0.1846; //How much the spindexer rotates for 1 slot (120 degrees)
     public static long rotateWaitTime = 400; //How long it takes a spindexer to rotate 1 slot
     public static double maxDegrees = 650;
+    public static double kInterpolation = 5;
     static double degreesToTicks(double degree){
         return degree/maxDegrees;
     }
@@ -58,6 +59,29 @@ public class Spindexer {
 
     //If this is true that means we can shoot the first shot in the shooting sequence
     boolean chambered = false;
+    private double initialPos = intakeStartPos; //For lerp
+    double servoPos = intakeStartPos;
+    private long ticksToTime(double ticks){
+        return Math.abs((long) (ticks / rotateTicks) * rotateWaitTime);
+    }
+    public static double interpolateEaseOutExp(
+            double startPos,
+            double targetPos,
+            long startTime,
+            long totalTime
+    ) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime <= startTime) return startPos;
+        if (currentTime >= startTime + totalTime) return targetPos;
+
+        // Normalize time to [0, 1]
+        double t = (double) (currentTime - startTime) / totalTime;
+
+        // Exponential ease-out
+        double factor = 1.0 - Math.pow(2.0, -kInterpolation * t);
+
+        return startPos + (targetPos - startPos) * factor;
+    }
     public Sensors getSensors(){
         return ballDetector;
     }
@@ -74,6 +98,8 @@ public class Spindexer {
             return;
         }
 
+        initialPos = servoPos;
+
         rotations++;
 
         targetPos += rotateTicks;
@@ -89,8 +115,10 @@ public class Spindexer {
             return;
         }
 
+        initialPos = servoPos;
+
         targetPos += degreesToTicks(degree);
-        rotateTimer.setWait(Math.abs((long) degree/120 * rotateWaitTime));
+        rotateTimer.setWait(ticksToTime(degreesToTicks(degree)));
         rotating = true;
 
         if (targetPos > maxPos) {
@@ -102,7 +130,8 @@ public class Spindexer {
     public void reset() {
         double ticksPassed = targetPos - intakeStartPos;
         //Calculate how much time to wait based on how many degrees away from zero pos
-        rotateTimer.setWait((long) (ticksPassed / rotateTicks * rotateWaitTime));
+        initialPos = servoPos;
+        rotateTimer.setWait(ticksToTime(ticksPassed));
         targetPos = intakeStartPos;
         rotating = true;
         rotations = 0;
@@ -115,7 +144,8 @@ public class Spindexer {
         }
 
         targetPos += shootingTicks;
-        rotateTimer.setWait(rotateWaitTime/2);
+        initialPos = servoPos;
+        rotateTimer.setWait(ticksToTime(shootingTicks));
         rotating = true;
 
         if (targetPos > maxPos) {
@@ -357,8 +387,11 @@ public class Spindexer {
             sequence = 1;
         }
         kicker.update();
-        rightServo.setPosition(targetPos);
-        leftServo.setPosition(targetPos);
+        double error = targetPos - initialPos;
+        servoPos = interpolateEaseOutExp(initialPos,targetPos,rotateTimer.getWaitTime(),ticksToTime(error));
+
+        rightServo.setPosition(servoPos);
+        leftServo.setPosition(servoPos);
 
         //Update the rotating variable based on how much time has passed since last rotation
         if (rotating) {
