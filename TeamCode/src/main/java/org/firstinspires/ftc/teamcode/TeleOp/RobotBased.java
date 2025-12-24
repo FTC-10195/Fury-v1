@@ -61,6 +61,9 @@ public class RobotBased extends LinearOpMode {
             if (RB){
                 state = States.RESTING;
             }
+            if (circle){
+                spindexer.rotate();
+            }
             switch (state){
                 case RESTING:
                     intake.setState(Intake.States.OFF);
@@ -128,7 +131,7 @@ public class RobotBased extends LinearOpMode {
 
 
             telemetry.addData("State",state);
-            
+
             telemetry.addData("X", follower.getPose().getX());
             telemetry.addData("Y", follower.getPose().getY());
             telemetry.addData("Heading",follower.getPose().getHeading());

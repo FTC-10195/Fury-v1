@@ -22,13 +22,13 @@ public class Spindexer {
         UNSORTED
     }
 
-    public static double intakeStartPos = .05; //"Zero pos of spindexr
-    public static double shootingTicks = .1; //60 degrees / 600 degrees per tick -> .1 ticks
+    public static double intakeStartPos = .18; //"Zero pos of spindexr
+    public static double shootingTicks = 0.0923; //60 degrees / 600 degrees per tick -> .1 ticks
     public static double shootingStartPos = intakeStartPos + shootingTicks;
     public static double maxPos = 1; //When spindexer is at or over max -> reset
-    public static double rotateTicks = .2; //How much the spindexer rotates for 1 slot (120 degrees)
-    public static long rotateWaitTime = 200; //How long it takes a spindexer to rotate 1 slot
-    public static double maxDegrees = 600;
+    public static double rotateTicks = 0.1846; //How much the spindexer rotates for 1 slot (120 degrees)
+    public static long rotateWaitTime = 400; //How long it takes a spindexer to rotate 1 slot
+    public static double maxDegrees = 650;
     static double degreesToTicks(double degree){
         return degree/maxDegrees;
     }
@@ -40,7 +40,7 @@ public class Spindexer {
     Servo rightServo; //Dominant
     Servo leftServo;
     Kicker kicker = new Kicker(); //Child subsystem because kicker is completely dependant on spindexer
-    CSensor colorSensor = new CSensor();
+    Sensors colorSensor = new Sensors();
     public static double targetPos = intakeStartPos;
     boolean rotating = false;
     //Timer to determine if the spindexer is rotating or not
@@ -224,7 +224,7 @@ public class Spindexer {
         switch (sequence) {
             //-1 and 0 are special cases that is only accessible when chambered
             case -1:
-                if (kicker.getState() == Kicker.States.RETURNING){
+                if (kicker.getState() == Kicker.States.RESTING){
                     reset();
                     sequence++;
                 }
@@ -355,7 +355,7 @@ public class Spindexer {
         }
         kicker.update();
         rightServo.setPosition(targetPos);
-        leftServo.setPosition(1 - targetPos);
+        leftServo.setPosition(targetPos);
 
         //Update the rotating variable based on how much time has passed since last rotation
         if (rotating) {
@@ -397,6 +397,7 @@ public class Spindexer {
         telemetry.addData("SpindexerRotating", rotating);
         telemetry.addData("SpindexerState", state);
         telemetry.addData("SpindexerSequence", sequence);
+        telemetry.addData("Spindexer rotations",rotations);
         kicker.status(telemetry);
         colorSensor.status(telemetry);
     }

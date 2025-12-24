@@ -15,7 +15,7 @@ public class Kicker {
         RETURNING,
         RESTING,
     }
-    public static long waitTime = 200;
+    public static long waitTime = 300;
 
     public States currentState = States.RESTING;
     Timer timer = new Timer();
