@@ -18,6 +18,7 @@ public class Sensors {
     public static int purpleThresholdBlue = 100;
     public static int purpleThresholdGreen = 0;
     public static int getPurpleThresholdRed = 0;
+    public static double distanceThresholdINCHES = 6;
     ColorSensor colorSensor;
     DistanceSensor distanceSensor;
     public void initiate(HardwareMap hardwareMap){
@@ -32,7 +33,7 @@ public class Sensors {
             return LimeLight.BallColors.P;
         }
         //Close, unknwon color, assume purple
-        if (distanceSensor.getDistance(DistanceUnit.INCH) < 6){
+        if (distanceSensor.getDistance(DistanceUnit.INCH) < distanceThresholdINCHES){
             return LimeLight.BallColors.P;
         }
         return LimeLight.BallColors.NONE;

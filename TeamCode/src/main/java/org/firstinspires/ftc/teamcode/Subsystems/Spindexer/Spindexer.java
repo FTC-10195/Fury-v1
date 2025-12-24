@@ -40,7 +40,7 @@ public class Spindexer {
     Servo rightServo; //Dominant
     Servo leftServo;
     Kicker kicker = new Kicker(); //Child subsystem because kicker is completely dependant on spindexer
-    Sensors colorSensor = new Sensors();
+    Sensors ballDetector = new Sensors();
     public static double targetPos = intakeStartPos;
     boolean rotating = false;
     //Timer to determine if the spindexer is rotating or not
@@ -58,6 +58,9 @@ public class Spindexer {
 
     //If this is true that means we can shoot the first shot in the shooting sequence
     boolean chambered = false;
+    public Sensors getSensors(){
+        return ballDetector;
+    }
 
     //Move one slot
     public void rotate() {
@@ -126,7 +129,7 @@ public class Spindexer {
     }
     public void saveBall(){
         //Read color sensor and save it
-        savedBall = colorSensor.getBallColor();
+        savedBall = ballDetector.getBallColor();
     }
 
     public void intakeSequence() {
@@ -340,7 +343,7 @@ public class Spindexer {
         rightServo.setDirection(Servo.Direction.REVERSE);
         leftServo = hardwareMap.servo.get("lspin");
         leftServo.setDirection(Servo.Direction.REVERSE);
-        colorSensor.initiate(hardwareMap);
+        ballDetector.initiate(hardwareMap);
         kicker.initiate(hardwareMap);
     }
 
@@ -399,7 +402,7 @@ public class Spindexer {
         telemetry.addData("SpindexerSequence", sequence);
         telemetry.addData("Spindexer rotations",rotations);
         kicker.status(telemetry);
-        colorSensor.status(telemetry);
+        ballDetector.status(telemetry);
     }
 
 }

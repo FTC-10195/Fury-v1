@@ -136,6 +136,8 @@ public class RobotBased extends LinearOpMode {
             telemetry.addData("Y", follower.getPose().getY());
             telemetry.addData("Heading",follower.getPose().getHeading());
 
+            lights.setBall(spindexer.getSensors().getBallColor());
+
             lights.update(telemetry);
 
             spindexer.status(telemetry);
