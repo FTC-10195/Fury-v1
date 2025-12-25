@@ -41,7 +41,7 @@ public class Spindexer {
     Servo rightServo; //Dominant
     Servo leftServo;
     Kicker kicker = new Kicker(); //Child subsystem because kicker is completely dependant on spindexer
-    Sensors ballDetector = new Sensors();
+    BallDetector ballDetector = new BallDetector();
     public static double targetPos = intakeStartPos;
     boolean rotating = false;
     //Timer to determine if the spindexer is rotating or not
@@ -82,7 +82,7 @@ public class Spindexer {
 
         return startPos + (targetPos - startPos) * factor;
     }
-    public Sensors getSensors(){
+    public BallDetector getSensors(){
         return ballDetector;
     }
 
@@ -387,8 +387,7 @@ public class Spindexer {
             sequence = 1;
         }
         kicker.update();
-        double error = targetPos - initialPos;
-        servoPos = interpolateEaseOutExp(initialPos,targetPos,rotateTimer.getWaitTime(),ticksToTime(error));
+        servoPos = interpolateEaseOutExp(initialPos,targetPos,rotateTimer.getStartTime(),rotateTimer.getWaitTime());
 
         rightServo.setPosition(servoPos);
         leftServo.setPosition(servoPos);
@@ -429,7 +428,7 @@ public class Spindexer {
     }
 
     public void status(Telemetry telemetry) {
-        telemetry.addData("SpindexerPosition", targetPos);
+        telemetry.addData("SpindexerPosition", rightServo.getPosition());
         telemetry.addData("SpindexerRotating", rotating);
         telemetry.addData("SpindexerState", state);
         telemetry.addData("SpindexerSequence", sequence);

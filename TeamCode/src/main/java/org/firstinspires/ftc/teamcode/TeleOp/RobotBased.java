@@ -127,6 +127,7 @@ public class RobotBased extends LinearOpMode {
            flywheel.update();
            intake.update();
             spindexer.update();
+            follower.update();
         //    limeLight.update(telemetry);
 
 

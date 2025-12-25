@@ -10,12 +10,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 
 @Config
-public class Sensors {
+public class BallDetector {
     //Will tune thresholds more, hopefully it's this simple (GREEN VS BLUE) but it might not be
-    public static int greenThresholdGreen = 100;
+    public static int greenThresholdGreen = 3200;
     public static int greenThresholdBlue = 0;
     public static int greenThresholdRed = 0;
-    public static int purpleThresholdBlue = 100;
+    public static int purpleThresholdBlue = 3000;
     public static int purpleThresholdGreen = 0;
     public static int getPurpleThresholdRed = 0;
     public static double distanceThresholdINCHES = 6;

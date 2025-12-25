@@ -16,6 +16,7 @@ public class Kicker {
         RESTING,
     }
     public static long waitTime = 300;
+    public static long kickerReturnPadding = 200;
 
     public States currentState = States.RESTING;
     Timer timer = new Timer();
@@ -40,7 +41,7 @@ public class Kicker {
                 kicker.setPosition(servoShootingPos);
                 if (timer.doneWaiting()){
                     currentState = States.RETURNING;
-                    timer.setWait(waitTime);
+                    timer.setWait(waitTime + kickerReturnPadding);
                 }
                 break;
             case RETURNING:
