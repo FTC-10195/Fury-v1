@@ -13,32 +13,28 @@ import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 public class BallDetector {
 
     //Will tune thresholds more, hopefully it's this simple (GREEN VS BLUE) but it might not be
-    public static int greenThresholdGreen = 3200;
+    public static int greenThresholdGreen = 1000;
     public static int greenThresholdBlue = 0;
     public static int greenThresholdRed = 0;
-    public static int purpleThresholdBlue = 3000;
+    public static int purpleThresholdBlue = 1000;
     public static int purpleThresholdGreen = 0;
     public static int getPurpleThresholdRed = 0;
-    public static double distanceThresholdINCHES = 3;
+    public static double distanceThresholdINCHES = 0;
     ColorSensor colorSensor;
-    DistanceSensor distanceSensor;
+    ColorSensor colorSensor2;
     public boolean active = true;
     public void initiate(HardwareMap hardwareMap){
         colorSensor = hardwareMap.colorSensor.get("color");
-        distanceSensor = hardwareMap.get(DistanceSensor.class,"dis");
+        colorSensor2 = hardwareMap.colorSensor.get("color2");
     }
     public LimeLight.BallColors getBallColor(){
         if (!active){
             return LimeLight.BallColors.NONE;
         }
-        if (colorSensor.green() > greenThresholdGreen){
+        if (colorSensor.green() > greenThresholdGreen || colorSensor2.green() > greenThresholdGreen){
             return  LimeLight.BallColors.G;
         }
-        if (colorSensor.blue() > purpleThresholdBlue){
-            return LimeLight.BallColors.P;
-        }
-        //Close, unknwon color, assume purple
-        if (distanceSensor.getDistance(DistanceUnit.INCH) < distanceThresholdINCHES){
+        if (colorSensor.blue() > purpleThresholdBlue || colorSensor2.blue() > purpleThresholdBlue){
             return LimeLight.BallColors.P;
         }
         return LimeLight.BallColors.NONE;
@@ -49,6 +45,9 @@ public class BallDetector {
                 "Green: " + colorSensor.green() + "\n" +
                 "Blue: " + colorSensor.blue() + "\n" +
                 "Alpha: " + colorSensor.alpha());
-        telemetry.addData("Distance",distanceSensor.getDistance(DistanceUnit.INCH));
+        telemetry.addData("Color Sensor2 Reading: ","\n Red: " + colorSensor2.red() + "\n" +
+                "Green: " + colorSensor2.green() + "\n" +
+                "Blue: " + colorSensor2.blue() + "\n" +
+                "Alpha: " + colorSensor2.alpha());
     }
 }

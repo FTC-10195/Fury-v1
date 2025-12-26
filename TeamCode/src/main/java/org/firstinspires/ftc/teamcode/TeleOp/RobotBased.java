@@ -56,8 +56,10 @@ public class RobotBased extends LinearOpMode {
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             previousGamepad1.copy(gamepad1);
-            if (RB){
+            if (LB){
                 state = States.RESTING;
+                spindexer.setState(Spindexer.States.RESTING);
+                spindexer.reset();
             }
             switch (state){
                 case RESTING:
@@ -77,6 +79,8 @@ public class RobotBased extends LinearOpMode {
                         flywheel.setState(Flywheel.States.SPINNING);
                         if (spindexer.getMode() == Spindexer.Modes.SORTED){
                             spindexer.setState(Spindexer.States.CHAMBER);
+                        }else{
+                            spindexer.rotateToShoot();
                         }
                     }
                     break;
@@ -95,7 +99,7 @@ public class RobotBased extends LinearOpMode {
                         lights.setMode(Lights.Mode.TEAM);
                     }
                     intake.setState(Intake.States.OFF);
-                    if (flywheel.isReady && spindexer.getState() == Spindexer.States.RESTING){
+                    if (flywheel.isReady && spindexer.getState() == Spindexer.States.RESTING && !spindexer.isRotating()){
                         gamepad1.rumble(1,10,100);
                         if (RT){
                             state = States.SHOOTING;
@@ -119,20 +123,17 @@ public class RobotBased extends LinearOpMode {
                 //climb
             }
             if (triangle){
-                lights.switchTeamColor();
-            }
-            if (circle){
                 switch (spindexer.getMode()){
-                    case MANUAL:
-                        spindexer.setMode(Spindexer.Modes.UNSORTED);
-                        break;
                     case UNSORTED:
                         spindexer.setMode(Spindexer.Modes.SORTED);
                         break;
                     case SORTED:
-                        spindexer.setMode(Spindexer.Modes.MANUAL);
+                        spindexer.setMode(Spindexer.Modes.UNSORTED);
                         break;
                 }
+            }
+            if (circle){
+                spindexer.rotate();
             }
 
 

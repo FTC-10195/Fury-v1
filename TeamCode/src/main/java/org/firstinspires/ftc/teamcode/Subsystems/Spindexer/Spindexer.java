@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 import org.firstinspires.ftc.teamcode.Subsystems.Timer;
+
 @Config
 public class Spindexer {
     public enum States {
@@ -21,20 +22,26 @@ public class Spindexer {
         SORTED,
         UNSORTED
     }
-    public static double maxDegrees = 620;
-    static double degreesToTicks(double degree){
-        return degree/maxDegrees;
+
+    public static double maxDegrees = 650;
+
+    static double degreesToTicks(double degree) {
+        return degree / maxDegrees;
     }
-    static double ticksToDegrees(double ticks){
+
+    static double ticksToDegrees(double ticks) {
         return ticks * maxDegrees;
     }
-    public static double intakeStartPos = .15; //"Zero pos of spindexr
+
+    public static double intakeStartPos = .14; //"Zero pos of spindexr
+    public static double rotateTicks = degreesToTicks(120);
     public static double shootingTicks = degreesToTicks(60); //60 degrees / 600 degrees per tick -> .1 ticks
-    public static double shootingStartPos = intakeStartPos + shootingTicks;
-    public static double maxPos = 1; //When spindexer is at or over max -> reset
-    public static double rotateTicks = degreesToTicks(120); //How much the spindexer rotates for 1 slot (120 degrees)
-    public static long rotateWaitTime = 400; //How long it takes a spindexer to rotate 1 slot
-    public static double kInterpolation = 5;
+    public static long rotateWaitTime = 350; //How long it takes a spindexer to rotate 1 slot
+
+    public static double maxPos = .99; //When spindexer is at or over max -> reset
+    public static double rightOffset = 0.00;
+    public static double leftOffset = -0.00;
+    public static int rapidFireShootNumber = 3;
     States state = States.RESTING;
     Modes mode = Modes.MANUAL;
     Servo rightServo; //Dominant
@@ -46,8 +53,6 @@ public class Spindexer {
     //Timer to determine if the spindexer is rotating or not
     Timer rotateTimer = new Timer();
 
-    //Sequences are used for intaking and shooting sequence
-    Timer sequenceTimer = new Timer();
     int sequence = 1;
 
     //Ball is what the color sensor reads
@@ -58,31 +63,18 @@ public class Spindexer {
 
     //If this is true that means we can shoot the first shot in the shooting sequence
     boolean chambered = false;
-    private double initialPos = intakeStartPos; //For lerp
-    double servoPos = intakeStartPos;
-    private long ticksToTime(double ticks){
+    LimeLight.BallColors[] motif = {LimeLight.BallColors.P, LimeLight.BallColors.P, LimeLight.BallColors.G};
+
+    private long ticksToTime(double ticks) {
         return Math.abs((long) (ticks / rotateTicks) * rotateWaitTime);
     }
-    public static double interpolateEaseOutExp(
-            double startPos,
-            double targetPos,
-            long startTime,
-            long totalTime
-    ) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime <= startTime) return startPos;
-        if (currentTime >= startTime + totalTime) return targetPos;
 
-        // Normalize time to [0, 1]
-        double t = (double) (currentTime - startTime) / totalTime;
-
-        // Exponential ease-out
-        double factor = 1.0 - Math.pow(2.0, -kInterpolation * t);
-
-        return startPos + (targetPos - startPos) * factor;
-    }
-    public BallDetector getSensors(){
+    public BallDetector getSensors() {
         return ballDetector;
+    }
+
+    public boolean isRotating() {
+        return rotating;
     }
 
     //Move one slot
@@ -97,8 +89,6 @@ public class Spindexer {
             return;
         }
 
-        initialPos = servoPos;
-
         rotations++;
 
         targetPos += rotateTicks;
@@ -106,15 +96,9 @@ public class Spindexer {
         rotating = true;
 
 
-
     }
-    public void rotateDegree(int degree){
-        //Already moving? don't rotate more
-        if (rotating) {
-            return;
-        }
 
-        initialPos = servoPos;
+    public void rotateDegree(int degree) {
 
         targetPos += degreesToTicks(degree);
         rotateTimer.setWait(ticksToTime(degreesToTicks(degree)));
@@ -129,21 +113,17 @@ public class Spindexer {
     public void reset() {
         double ticksPassed = targetPos - intakeStartPos;
         //Calculate how much time to wait based on how many degrees away from zero pos
-        initialPos = servoPos;
         rotateTimer.setWait(ticksToTime(ticksPassed));
         targetPos = intakeStartPos;
+        chambered = false;
         rotating = true;
         rotations = 0;
 
     }
-    public void rotateToShoot(){
-        //Already moving? don't rotate more
-        if (rotating) {
-            return;
-        }
 
+
+    public void rotateToShoot() {
         targetPos += shootingTicks;
-        initialPos = servoPos;
         rotateTimer.setWait(ticksToTime(shootingTicks));
         rotating = true;
 
@@ -156,7 +136,8 @@ public class Spindexer {
         kicker.kick();
         ballsShot++;
     }
-    public void saveBall(){
+
+    public void saveBall() {
         //Read color sensor and save it
         savedBall = ballDetector.getBallColor();
     }
@@ -189,35 +170,35 @@ public class Spindexer {
 
     public void chamberSequence() {
         //If spindexer is chambered then the job is complete, don't do anything
-        if (chambered){
+        if (chambered) {
+            setState(States.RESTING);
             return;
         }
 
+
         switch (sequence) {
             case 1:
+                if (rotations >= 2) {
+                    chambered = true;
+                    rotateToShoot();
+                    return;
+                }
                 saveBall();
                 //If target
-                if (savedBall != LimeLight.BallColors.NONE) {
+                if (savedBall == motif[ballsShot]) {
                     //Shooting
-                    rotateToShoot();
-                }else{
-                   rotate();
+                    rotateDegree(180);
+                } else {
+                    rotate();
+                    rotateTimer.add(500);
                 }
                 sequence++;
                 break;
             case 2:
-                //This means the spindexer reset, and if it reset and the code reaches this point
-                //That means we can't find our target ball -> give up
-                //Might as well say chambered because when we shoot sorted we wont find it anyways
-                //HOWEVER, we must move it in position to shoot
-                if (rotations == 0){
-                    rotateToShoot();
-                    sequence++;
-                }
                 //Finished rotating
-                if (!rotating){
+                if (!rotating) {
                     //If target -> shoot
-                    if (savedBall != LimeLight.BallColors.NONE) {
+                    if (savedBall == motif[ballsShot]) {
                         //Usually shoot here, just say chambered
                         chambered = true;
                     }//Not target? check again
@@ -225,7 +206,7 @@ public class Spindexer {
                 }
                 break;
             case 3:
-                if (!rotating){
+                if (!rotating) {
                     sequence = 1;
                     chambered = true;
                 }
@@ -233,75 +214,76 @@ public class Spindexer {
         }
     }
 
-    boolean switchToUnsorted = false;
+    boolean forceEndSortedShooting = false;
+
     public void sortedShootingSequence() {
         if (chambered) {
             //FIRE
             shoot();
             sequence = -1;
+            chambered = false;
+            forceEndSortedShooting = false;
+            return;
         }
-        if (ballsShot >= 3) {
+        if (ballsShot >= 3 && sequence == 1 || forceEndSortedShooting) {
             ballsShot = 0;
             state = States.RESTING;
             reset();
             return;
         }
-        if (switchToUnsorted){
-            if (!rotating){
-                mode = Modes.UNSORTED;
-                sequence = 1;
-            }
-            return;
-        }
         switch (sequence) {
             //-1 and 0 are special cases that is only accessible when chambered
             case -1:
-                if (kicker.getState() == Kicker.States.RESTING){
+                if (kicker.getState() == Kicker.States.RESTING && !rotating) {
                     reset();
                     sequence++;
                 }
                 break;
             case 0:
-                if (!rotating){
+                if (!rotating) {
                     sequence++;
                 }
                 break;
             case 1:
+                if (rotating){
+                    return;
+                }
                 saveBall();
                 //If target -> rotate to shoot
-                if (savedBall != LimeLight.BallColors.NONE){
-                    rotateToShoot();
-                }else{
+                if (savedBall == motif[ballsShot]) {
+                    rotateDegree(180);
+                } else {
                     rotate();
+                    rotateTimer.add(500);
                 }
-                //This means it reset and cant find target ball -> switch to rapid fire
-                if (rotations == 0){
-                    switchToUnsorted = true;
-                    return;
+                //This means it reset and cant find target ball
+                //End this whole sequence
+                if (rotations == 0) {
+                    forceEndSortedShooting = true;
                 }
                 sequence++;
                 break;
             case 2:
                 //If ball
                 if (!rotating) {
-                    if (savedBall != LimeLight.BallColors.NONE) {
+                    if (savedBall == motif[ballsShot]) {
                         shoot();
                         sequence++;
-                    }else{
+                    } else {
                         sequence = 1;
                     }
                 }
                 break;
             case 3:
                 //Done shooting
-                if (kicker.getState() == Kicker.States.RETURNING){
+                if (kicker.getState() == Kicker.States.RESTING) {
                     reset();
                     sequence++;
                 }
                 break;
             case 4:
                 //Done rotating
-                if (!rotating){
+                if (!rotating) {
                     sequence = 1;
                 }
                 break;
@@ -310,7 +292,7 @@ public class Spindexer {
 
     public void rapidFireSequence() {
         //AKA unsorted shooting
-        if (ballsShot >= 3) {
+        if (ballsShot >= rapidFireShootNumber && sequence == 1) {
             ballsShot = 0;
             state = States.RESTING;
             reset();
@@ -318,27 +300,23 @@ public class Spindexer {
         }
         switch (sequence) {
             case 1:
-                //Rotate to shooting pos
-                rotateToShoot();
-                sequence++;
-                break;
-            case 2:
                 if (!rotating) {
                     shoot();
                     sequence++;
+                    return;
                 }
                 break;
-            case 3:
+            case 2:
                 //Ball is shot
-                if (kicker.getState() == Kicker.States.RETURNING) {
+                if (kicker.getState() == Kicker.States.RESTING) {
                     rotate();
                     sequence++;
                 }
                 break;
-            case 4:
+            case 3:
                 //Spindexer returned
                 if (!rotating) {
-                    sequence = 2;
+                    sequence = 1;
                 }
                 break;
         }
@@ -355,8 +333,10 @@ public class Spindexer {
     }
 
     public void setMode(Modes newMode) {
-        switchToUnsorted = false;
         mode = newMode;
+    }
+    public void setMotif(LimeLight.BallColors[] motif){
+        this.motif = motif;
     }
 
     public Modes getMode() {
@@ -369,11 +349,11 @@ public class Spindexer {
 
     public void initiate(HardwareMap hardwareMap) {
         rightServo = hardwareMap.servo.get("rspin");
-        rightServo.setDirection(Servo.Direction.REVERSE);
         leftServo = hardwareMap.servo.get("lspin");
-        leftServo.setDirection(Servo.Direction.REVERSE);
         ballDetector.initiate(hardwareMap);
         kicker.initiate(hardwareMap);
+        shootingTicks = degreesToTicks(60); //60 degrees / 600 degrees per tick -> .1 ticks
+        rotateTicks = degreesToTicks(120);
     }
 
 
@@ -386,10 +366,9 @@ public class Spindexer {
             sequence = 1;
         }
         kicker.update();
-        servoPos = interpolateEaseOutExp(initialPos,targetPos,rotateTimer.getStartTime(),rotateTimer.getWaitTime());
 
-        rightServo.setPosition(servoPos);
-        leftServo.setPosition(servoPos);
+        rightServo.setPosition(targetPos + rightOffset);
+        leftServo.setPosition(targetPos + leftOffset);
 
         //Update the rotating variable based on how much time has passed since last rotation
         if (rotating) {
@@ -429,9 +408,14 @@ public class Spindexer {
     public void status(Telemetry telemetry) {
         telemetry.addData("SpindexerPosition", rightServo.getPosition());
         telemetry.addData("SpindexerRotating", rotating);
+        telemetry.addData("Spindexer Chambered",chambered);
+        if (ballsShot < 3) {
+            telemetry.addData("Spindexer Target Ball", motif[ballsShot]);
+        }
         telemetry.addData("SpindexerState", state);
         telemetry.addData("SpindexerSequence", sequence);
-        telemetry.addData("Spindexer rotations",rotations);
+        telemetry.addData("Spindexer rotations", rotations);
+        telemetry.addData("Spindexer mode", mode);
         kicker.status(telemetry);
         ballDetector.status(telemetry);
     }

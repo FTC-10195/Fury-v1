@@ -16,7 +16,7 @@ public class Intake {
 
 
     public States currentState = States.OFF;
-    public static double intakePower = .8;
+    public static double intakePower = 1;
     public static double ejectPower = -1;
 
 

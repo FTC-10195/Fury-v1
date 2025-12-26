@@ -52,8 +52,9 @@ public class LimeLight {
         return (teamColor.equals(Lights.TeamColors.RED) && id == redId) || (teamColor.equals(Lights.TeamColors.BLUE) && id == blueId);
     }
 
+
     public void update(Telemetry telemetry) {
-        LLResult result = limelight.getLatestResult();
+     /*  LLResult result = limelight.getLatestResult();
         canSeeTeamColor = false;
         if (result == null || result.isValid()) {
             return;
@@ -68,6 +69,7 @@ public class LimeLight {
             canSeeTeamColor = colorId(id);
 
         }
+        */
         telemetry.addData("LimelightMotif", motif);
         telemetry.addData("Limelight teamColor", teamColor);
         telemetry.addData("Limelight can see team color", canSeeTeamColor);

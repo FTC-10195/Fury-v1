@@ -16,7 +16,7 @@ public class Kicker {
         RESTING,
     }
     public static long waitTime = 300;
-    public static long kickerReturnPadding = 200;
+    public static long kickerReturnPadding = 0;
 
     public States currentState = States.RESTING;
     Timer timer = new Timer();
@@ -26,7 +26,7 @@ public class Kicker {
         kicker = hardwareMap.servo.get("kicker");
         kicker.setDirection(Servo.Direction.REVERSE);
     }
-    public static double servoShootingPos = 0.75;
+    public static double servoShootingPos = 0.8;
     public static double servoRestingPos = 0.45;
     public void kick(){
         currentState = States.SHOOTING;

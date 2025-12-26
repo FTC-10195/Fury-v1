@@ -20,6 +20,9 @@ public class Timer {
     public long getWaitTime(){
         return waitTime;
     }
+    public void add(long time){
+        waitTime += time;
+    }
     public boolean doneWaiting(){
         return System.currentTimeMillis() - timeSnapshot > waitTime;
     }
