@@ -27,7 +27,7 @@ public class Kicker {
         kicker.setDirection(Servo.Direction.REVERSE);
     }
     public static double servoShootingPos = 0.75;
-    public static double servoRestingPos = 0.5;
+    public static double servoRestingPos = 0.45;
     public void kick(){
         currentState = States.SHOOTING;
         timer.setWait(waitTime);

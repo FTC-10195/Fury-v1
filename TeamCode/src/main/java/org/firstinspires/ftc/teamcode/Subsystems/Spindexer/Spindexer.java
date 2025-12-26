@@ -21,21 +21,20 @@ public class Spindexer {
         SORTED,
         UNSORTED
     }
-
-    public static double intakeStartPos = .18; //"Zero pos of spindexr
-    public static double shootingTicks = 0.0923; //60 degrees / 600 degrees per tick -> .1 ticks
-    public static double shootingStartPos = intakeStartPos + shootingTicks;
-    public static double maxPos = 1; //When spindexer is at or over max -> reset
-    public static double rotateTicks = 0.1846; //How much the spindexer rotates for 1 slot (120 degrees)
-    public static long rotateWaitTime = 400; //How long it takes a spindexer to rotate 1 slot
-    public static double maxDegrees = 650;
-    public static double kInterpolation = 5;
+    public static double maxDegrees = 620;
     static double degreesToTicks(double degree){
         return degree/maxDegrees;
     }
     static double ticksToDegrees(double ticks){
         return ticks * maxDegrees;
     }
+    public static double intakeStartPos = .15; //"Zero pos of spindexr
+    public static double shootingTicks = degreesToTicks(60); //60 degrees / 600 degrees per tick -> .1 ticks
+    public static double shootingStartPos = intakeStartPos + shootingTicks;
+    public static double maxPos = 1; //When spindexer is at or over max -> reset
+    public static double rotateTicks = degreesToTicks(120); //How much the spindexer rotates for 1 slot (120 degrees)
+    public static long rotateWaitTime = 400; //How long it takes a spindexer to rotate 1 slot
+    public static double kInterpolation = 5;
     States state = States.RESTING;
     Modes mode = Modes.MANUAL;
     Servo rightServo; //Dominant

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 
 @Config
 public class BallDetector {
+
     //Will tune thresholds more, hopefully it's this simple (GREEN VS BLUE) but it might not be
     public static int greenThresholdGreen = 3200;
     public static int greenThresholdBlue = 0;
@@ -18,14 +19,18 @@ public class BallDetector {
     public static int purpleThresholdBlue = 3000;
     public static int purpleThresholdGreen = 0;
     public static int getPurpleThresholdRed = 0;
-    public static double distanceThresholdINCHES = 6;
+    public static double distanceThresholdINCHES = 3;
     ColorSensor colorSensor;
     DistanceSensor distanceSensor;
+    public boolean active = true;
     public void initiate(HardwareMap hardwareMap){
         colorSensor = hardwareMap.colorSensor.get("color");
         distanceSensor = hardwareMap.get(DistanceSensor.class,"dis");
     }
     public LimeLight.BallColors getBallColor(){
+        if (!active){
+            return LimeLight.BallColors.NONE;
+        }
         if (colorSensor.green() > greenThresholdGreen){
             return  LimeLight.BallColors.G;
         }

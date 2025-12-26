@@ -23,11 +23,11 @@ public class SubsystemBased extends LinearOpMode {
         drivetrain.initiate(hardwareMap);
         Lights lights = new Lights();
         lights.initiate(hardwareMap);
-        lights.setTeamColor(Lights.TeamColors.RED);
+        lights.setMode(Lights.Mode.SUBSYSTEM_BASED);
 
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
-        spindexer.setMode(Spindexer.Modes.UNSORTED);
+        spindexer.setMode(Spindexer.Modes.MANUAL);
      //   LimeLight limeLight = new LimeLight();
       //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
@@ -46,40 +46,21 @@ public class SubsystemBased extends LinearOpMode {
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             boolean square = gamepad1.square && !previousGamepad1.square;
             previousGamepad1.copy(gamepad1);
-            if (triangle){
-                lights.switchTeamColor();
-            }
             if (LB){
-                //spindexer.rotateDegree(-60);
-                spindexer.getKicker().kick();
-            }
-            if (RB){
-                spindexer.rotate();
-            }
-            if (RT){
-                spindexer.rotateDegree(60);
-            }
-            if (LT){
                 spindexer.reset();
                 spindexer.setState(Spindexer.States.RESTING);
             }
-            if (X){
-                spindexer.setState(Spindexer.States.SHOOTING);
+            if (RB){
+                spindexer.getKicker().kick();
             }
-            if (circle){
-                switch (lights.getMode()){
-                    case TEAM:
-                        lights.setMode(Lights.Mode.MOTIF);
-                        break;
-                    case MOTIF:
-                        lights.setMode(Lights.Mode.INTAKING);
-                        break;
-                    case INTAKING:
-                        lights.setMode(Lights.Mode.TEAM);
-                        break;
+            if (LT){
+                if (intake.getState() != Intake.States.ON) {
+                    intake.setState(Intake.States.ON);
+                }else{
+                    intake.setState(Intake.States.OFF);
                 }
             }
-            if (square){
+            if (RT){
                 switch (flywheel.getState()){
                     case RESTING:
                         flywheel.setState(Flywheel.States.SPINNING);
@@ -89,6 +70,20 @@ public class SubsystemBased extends LinearOpMode {
                         break;
                 }
             }
+            if (X){
+                if (intake.getState() != Intake.States.OUTTAKE) {
+                    intake.setState(Intake.States.OUTTAKE);
+                }else{
+                    intake.setState(Intake.States.OFF);
+                }
+            }
+            if (circle){
+                spindexer.rotate();
+            }
+            if (triangle){
+                spindexer.rotateDegree(60);
+            }
+
 
 
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);

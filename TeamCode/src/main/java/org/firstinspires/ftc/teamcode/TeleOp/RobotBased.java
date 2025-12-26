@@ -50,19 +50,14 @@ public class RobotBased extends LinearOpMode {
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean X = gamepad1.cross && !previousGamepad1.cross;
+            boolean square = gamepad1.square && !previousGamepad1.square;
             boolean triangle = gamepad1.triangle && !previousGamepad1.triangle;
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger <= 0.1;
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             previousGamepad1.copy(gamepad1);
-            if (triangle){
-                lights.switchTeamColor();
-            }
             if (RB){
                 state = States.RESTING;
-            }
-            if (circle){
-                spindexer.rotate();
             }
             switch (state){
                 case RESTING:
@@ -120,6 +115,27 @@ public class RobotBased extends LinearOpMode {
             if (gamepad1.cross){
                 intake.setState(Intake.States.OUTTAKE);
             }
+            if (square){
+                //climb
+            }
+            if (triangle){
+                lights.switchTeamColor();
+            }
+            if (circle){
+                switch (spindexer.getMode()){
+                    case MANUAL:
+                        spindexer.setMode(Spindexer.Modes.UNSORTED);
+                        break;
+                    case UNSORTED:
+                        spindexer.setMode(Spindexer.Modes.SORTED);
+                        break;
+                    case SORTED:
+                        spindexer.setMode(Spindexer.Modes.MANUAL);
+                        break;
+                }
+            }
+
+
 
 
 

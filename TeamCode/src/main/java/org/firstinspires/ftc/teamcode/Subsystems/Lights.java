@@ -16,7 +16,8 @@ public class Lights {
     public enum Mode {
         TEAM,
         MOTIF,
-        INTAKING
+        INTAKING,
+        SUBSYSTEM_BASED
     }
 
     static TeamColors savedColor;
@@ -40,6 +41,7 @@ public class Lights {
     public static double red = 0.28;
     public static double purple = .68;
     public static double green = .5;
+    public static double yellow = .35; //Subsystem based/no team
     public static long motifSwitchWaitTime = 500;
     Timer motifSwitchTimer = new Timer();
 
@@ -165,6 +167,9 @@ public class Lights {
                 break;
             case INTAKING:
                 intake();
+                break;
+            case SUBSYSTEM_BASED:
+                color = yellow;
                 break;
         }
 
