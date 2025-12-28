@@ -80,7 +80,7 @@ public class RobotBased extends LinearOpMode {
                         if (spindexer.getMode() == Spindexer.Modes.SORTED){
                             spindexer.setState(Spindexer.States.CHAMBER);
                         }else{
-                            spindexer.rotateToShoot();
+                            spindexer.rotateDegree(60);
                         }
                     }
                     break;
@@ -90,6 +90,8 @@ public class RobotBased extends LinearOpMode {
                     lights.setMode(Lights.Mode.INTAKING);
                     if (LT || spindexer.getState() == Spindexer.States.RESTING){
                         state = States.RESTING;
+                        spindexer.setState(Spindexer.States.RESTING);
+                        spindexer.reset();
                     }
                     break;
                 case PREPARING_TO_FIRE:
@@ -107,10 +109,17 @@ public class RobotBased extends LinearOpMode {
                         }
                     }
                     break;
-                case SHOOTING:
+                case SHOOTING: if (spindexer.getMode() == Spindexer.Modes.SORTED){
+                    lights.setMode(Lights.Mode.INTAKING);
+                }else{
+                    lights.setMode(Lights.Mode.TEAM);
+                }
+
                     intake.setState(Intake.States.OFF);
                     if (RT || spindexer.getState() == Spindexer.States.RESTING){
                         state = States.RESTING;
+                        spindexer.setState(Spindexer.States.RESTING);
+                        spindexer.reset();
                     }
                     break;
             }

@@ -13,13 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 public class BallDetector {
 
     //Will tune thresholds more, hopefully it's this simple (GREEN VS BLUE) but it might not be
-    public static int greenThresholdGreen = 1000;
-    public static int greenThresholdBlue = 0;
-    public static int greenThresholdRed = 0;
-    public static int purpleThresholdBlue = 1000;
-    public static int purpleThresholdGreen = 0;
-    public static int getPurpleThresholdRed = 0;
-    public static double distanceThresholdINCHES = 0;
+    public static int alphaThreshold = 250;
     ColorSensor colorSensor;
     ColorSensor colorSensor2;
     public boolean active = true;
@@ -28,16 +22,17 @@ public class BallDetector {
         colorSensor2 = hardwareMap.colorSensor.get("color2");
     }
     public LimeLight.BallColors getBallColor(){
-        if (!active){
+        if (colorSensor.alpha() < alphaThreshold && colorSensor2.alpha() < alphaThreshold){
             return LimeLight.BallColors.NONE;
         }
-        if (colorSensor.green() > greenThresholdGreen || colorSensor2.green() > greenThresholdGreen){
-            return  LimeLight.BallColors.G;
+        if (colorSensor.green() >= colorSensor.blue()){
+            return LimeLight.BallColors.G;
         }
-        if (colorSensor.blue() > purpleThresholdBlue || colorSensor2.blue() > purpleThresholdBlue){
-            return LimeLight.BallColors.P;
+        if (colorSensor2.green() >= colorSensor2.blue()){
+            return LimeLight.BallColors.G;
         }
-        return LimeLight.BallColors.NONE;
+
+        return LimeLight.BallColors.P;
     }
     public void status(Telemetry telemetry){
         telemetry.addData("Color Sensor Ball", getBallColor());

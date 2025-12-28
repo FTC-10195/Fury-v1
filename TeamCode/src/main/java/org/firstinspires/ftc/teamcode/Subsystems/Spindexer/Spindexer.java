@@ -24,6 +24,7 @@ public class Spindexer {
     }
 
     public static double maxDegrees = 650;
+    public static long sortedShootingScanPadding = 100;
 
     static double degreesToTicks(double degree) {
         return degree / maxDegrees;
@@ -34,9 +35,7 @@ public class Spindexer {
     }
 
     public static double intakeStartPos = .14; //"Zero pos of spindexr
-    public static double rotateTicks = degreesToTicks(120);
-    public static double shootingTicks = degreesToTicks(60); //60 degrees / 600 degrees per tick -> .1 ticks
-    public static long rotateWaitTime = 350; //How long it takes a spindexer to rotate 1 slot
+    public static double rotateTicks = degreesToTicks(120);public static long rotateWaitTime = 350; //How long it takes a spindexer to rotate 1 slot
 
     public static double maxPos = .99; //When spindexer is at or over max -> reset
     public static double rightOffset = 0.00;
@@ -122,16 +121,6 @@ public class Spindexer {
     }
 
 
-    public void rotateToShoot() {
-        targetPos += shootingTicks;
-        rotateTimer.setWait(ticksToTime(shootingTicks));
-        rotating = true;
-
-        if (targetPos > maxPos) {
-            reset();
-        }
-    }
-
     public void shoot() {
         kicker.kick();
         ballsShot++;
@@ -178,19 +167,19 @@ public class Spindexer {
 
         switch (sequence) {
             case 1:
-                if (rotations >= 2) {
-                    chambered = true;
-                    rotateToShoot();
-                    return;
-                }
                 saveBall();
                 //If target
                 if (savedBall == motif[ballsShot]) {
                     //Shooting
                     rotateDegree(180);
                 } else {
+                    if (rotations >= 2) {
+                        chambered = true;
+                        rotateDegree(60);
+                        return;
+                    }
                     rotate();
-                    rotateTimer.add(500);
+                    rotateTimer.add(sortedShootingScanPadding);
                 }
                 sequence++;
                 break;
@@ -226,6 +215,9 @@ public class Spindexer {
             return;
         }
         if (ballsShot >= 3 && sequence == 1 || forceEndSortedShooting) {
+            if (rotating){
+                return;
+            }
             ballsShot = 0;
             state = States.RESTING;
             reset();
@@ -252,9 +244,11 @@ public class Spindexer {
                 //If target -> rotate to shoot
                 if (savedBall == motif[ballsShot]) {
                     rotateDegree(180);
+                    sequence++;
+                    return;
                 } else {
                     rotate();
-                    rotateTimer.add(500);
+                    rotateTimer.add(sortedShootingScanPadding);
                 }
                 //This means it reset and cant find target ball
                 //End this whole sequence
@@ -352,7 +346,6 @@ public class Spindexer {
         leftServo = hardwareMap.servo.get("lspin");
         ballDetector.initiate(hardwareMap);
         kicker.initiate(hardwareMap);
-        shootingTicks = degreesToTicks(60); //60 degrees / 600 degrees per tick -> .1 ticks
         rotateTicks = degreesToTicks(120);
     }
 
