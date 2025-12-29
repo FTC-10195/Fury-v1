@@ -31,13 +31,16 @@ public class Command {
     public static void reset(){
         sequence = 0;
     }
-    public int follow(int currentPath, PathChain path){
-        return follow(currentPath,0,path,1);
+    public int follow(PathChain path){
+        return follow(0,path,1);
     }
-    public int follow(int currentPath, long waitTime, PathChain path){
-        return follow(currentPath,waitTime,path,1);
+    public int follow(long waitTime, PathChain path){
+        return follow(waitTime,path,1);
     }
-    public int follow(int currentPath, long waitTime, PathChain path, double speed){
+    public int follow(PathChain path, double speed){
+        return follow(0,path,speed);
+    }
+    public int follow(long waitTime, PathChain path, double speed){
         switch (sequence){
             case 0:
                 follower.followPath(path,speed,true);
@@ -47,13 +50,13 @@ public class Command {
             case 1:
                 if (sequenceTimer.doneWaiting()){
                     sequence = 0;
-                    return currentPath + 1;
+                    return 1;
                 }
                 break;
         }
-        return currentPath;
+        return 0;
     }
-    public int intake(int path){
+    public int intake(){
         switch (sequence){
             case 0:
                 intake.setState(Intake.States.ON);
@@ -66,16 +69,14 @@ public class Command {
                     intake.setState(Intake.States.OFF);
                     spindexer.setState(Spindexer.States.RESTING);
                     spindexer.reset();
-                    sequence++;
+                    sequence = 0;
+                    return 1;
                 }
                 break;
-            case 2:
-                sequence = 0;
-                return path + 1;
         }
-        return path;
+        return 0;
     }
-    public int shoot(int path){
+    public int shoot(){
         switch (sequence){
             case 0:
                 spindexer.setState(Spindexer.States.SHOOTING);
@@ -84,10 +85,10 @@ public class Command {
             case 1:
                 if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING){
                     sequence = 0;
-                    return path + 1;
+                    return 1;
                 }
         }
-        return path;
+        return 0;
     }
 }
 

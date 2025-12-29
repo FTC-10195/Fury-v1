@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -29,22 +30,26 @@ public class Solo extends LinearOpMode {
     private int path = 0;
     private int redX = 1;
 
-    private double calculateRedHeading(double heading) {
+    private double calculateHeading(double heading) {
         if (redX == 1) {
-            return 0;
+            return  Math.toRadians(heading);
         }
-        return 180 - (heading * 2);
+        return Math.toRadians(180 - heading);
     }
 
     PathChain shootPrescore,
-            intakeFirst, intakeFirst2;
+            intakeFirst, intakeFirst2, gateOpen, shoot2;
 
     public void buildPaths() {
 
         final Pose startPose = new Pose(57.2836845026299 * redX, 135.4077434731531, Math.toRadians(90)); // Start Pose of our robot.
         final Pose shootPose = new Pose(59.30539192071153 * redX, 120.07646221936741, Math.toRadians(90));
-        final Pose intakeFirstPose = new Pose(43 * redX, 82, Math.toRadians(180) + calculateRedHeading(180));
-        final Pose intakeFirst2Pose = new Pose(intakeFirstPose.getX() - (20 * redX), intakeFirstPose.getY());
+        final Pose intakeFirstPose = new Pose(43 * redX, 82, calculateHeading(180));
+        final Pose intakeFirst2Pose = new Pose(intakeFirstPose.getX() - (23 * redX), intakeFirstPose.getY());
+        final Pose openGatePose = new Pose(12.855805597579424 * redX, 63.394856278366106, calculateHeading(180));
+        final Pose openGateControl = new Pose(53.615260968229954 * redX, 74.06959152798788, calculateHeading(180));
+        final Pose shootPose2 = new Pose(45.31571482602118 * redX, 83.43721633888049, calculateHeading(180));
+
         follower.setStartingPose(startPose);
 
         shootPrescore = follower.pathBuilder()
@@ -54,7 +59,7 @@ public class Solo extends LinearOpMode {
                                 shootPose
                         )
                 )
-                .setGlobalConstantHeadingInterpolation(Math.toRadians(90))
+                .setGlobalConstantHeadingInterpolation(calculateHeading(90))
                 .build();
         intakeFirst = follower.pathBuilder()
                 .addPath(
@@ -63,7 +68,7 @@ public class Solo extends LinearOpMode {
                                 intakeFirstPose
                         )
                 )
-                .setConstantHeadingInterpolation(Math.toRadians(180) + calculateRedHeading(180))
+                .setLinearHeadingInterpolation(calculateHeading(90),calculateHeading(180))
                 .build();
         intakeFirst2 = follower.pathBuilder()
                 .addPath(
@@ -72,7 +77,26 @@ public class Solo extends LinearOpMode {
                                 intakeFirst2Pose
                         )
                 )
-                .setGlobalConstantHeadingInterpolation(Math.toRadians(180) + calculateRedHeading(180))
+                .setGlobalConstantHeadingInterpolation(calculateHeading(180))
+                .build();
+        gateOpen = follower.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                intakeFirst2Pose,
+                                openGateControl,
+                                openGatePose
+                        )
+                )
+                .setGlobalConstantHeadingInterpolation(calculateHeading(180))
+                .build();
+        shoot2 = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                openGatePose,
+                                shootPose2
+                        )
+                )
+                .setGlobalConstantHeadingInterpolation(calculateHeading(180))
                 .build();
     }
 
@@ -122,7 +146,7 @@ public class Solo extends LinearOpMode {
             return;
         }
         while (opModeIsActive()) {
-            telemetry.addData("Auto Sequence", path);
+            telemetry.addData("Auto path", path);
 
             follower.update();
             flywheel.update();
@@ -138,20 +162,31 @@ public class Solo extends LinearOpMode {
 
             switch (path) {
                 case 0:
-                    path = command.follow(path, 250, shootPrescore);
+                    path += command.follow(250, shootPrescore);
                     flywheel.setState(Flywheel.States.SPINNING);
                     break;
                 case 1:
-                    path = command.shoot(path);
+                    path += command.shoot();
                     break;
                 case 2:
-                    path = command.follow(path, 2000, intakeFirst);
+                    path += command.follow(2000, intakeFirst);
                     break;
                 case 3:
-                    path = command.follow(path, intakeFirst2);
+                    path += command.follow(intakeFirst2,.55);
                     break;
                 case 4:
-                    path = command.intake(path);
+                    path += command.intake();
+                    break;
+                case 5:
+                    path += command.follow(2000,gateOpen,.8);
+                    //When path done rotate spindexer 60 degrees
+                    if (path != 5){
+                        spindexer.rotateDegree(60);
+                    }
+                    break;
+                case 6:
+                    path += command.follow(2000,shoot2);
+                    
                     break;
             }
         }

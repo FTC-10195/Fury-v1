@@ -14,12 +14,13 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @TeleOp
 public class RobotBased extends LinearOpMode {
-    public enum States{
+    public enum States {
         RESTING,
         INTAKING,
         PREPARING_TO_FIRE,
         SHOOTING
     }
+
     @Override
     public void runOpMode() throws InterruptedException {
         States state = States.RESTING;
@@ -38,8 +39,8 @@ public class RobotBased extends LinearOpMode {
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
         spindexer.setMode(Spindexer.Modes.UNSORTED);
-     //   LimeLight limeLight = new LimeLight();
-      //  limeLight.initiate(hardwareMap);
+        //   LimeLight limeLight = new LimeLight();
+        //  limeLight.initiate(hardwareMap);
         if (isStopRequested()) {
             lights.reset();
             return;
@@ -56,30 +57,30 @@ public class RobotBased extends LinearOpMode {
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             previousGamepad1.copy(gamepad1);
-            if (LB){
+            if (LB) {
                 state = States.RESTING;
                 spindexer.setState(Spindexer.States.RESTING);
                 spindexer.reset();
             }
-            switch (state){
+            switch (state) {
                 case RESTING:
                     intake.setState(Intake.States.OFF);
                     flywheel.setState(Flywheel.States.RESTING);
-                    if (spindexer.getMode() == Spindexer.Modes.SORTED){
+                    if (spindexer.getMode() == Spindexer.Modes.SORTED) {
                         lights.setMode(Lights.Mode.MOTIF);
-                    }else{
+                    } else {
                         lights.setMode(Lights.Mode.TEAM);
                     }
-                    if (LT){
+                    if (LT) {
                         state = States.INTAKING;
                         spindexer.setState(Spindexer.States.INTAKING);
                     }
-                    if (RT){
+                    if (RT) {
                         state = States.PREPARING_TO_FIRE;
                         flywheel.setState(Flywheel.States.SPINNING);
-                        if (spindexer.getMode() == Spindexer.Modes.SORTED){
+                        if (spindexer.getMode() == Spindexer.Modes.SORTED) {
                             spindexer.setState(Spindexer.States.CHAMBER);
-                        }else{
+                        } else {
                             spindexer.rotateDegree(60);
                         }
                     }
@@ -88,35 +89,36 @@ public class RobotBased extends LinearOpMode {
                     intake.setState(Intake.States.ON);
                     flywheel.setState(Flywheel.States.RESTING);
                     lights.setMode(Lights.Mode.INTAKING);
-                    if (LT || spindexer.getState() == Spindexer.States.RESTING){
+                    if (LT || spindexer.getState() == Spindexer.States.RESTING) {
                         state = States.RESTING;
                         spindexer.setState(Spindexer.States.RESTING);
                         spindexer.reset();
                     }
                     break;
                 case PREPARING_TO_FIRE:
-                    if (spindexer.getMode() == Spindexer.Modes.SORTED){
+                    if (spindexer.getMode() == Spindexer.Modes.SORTED) {
                         lights.setMode(Lights.Mode.MOTIF);
-                    }else{
+                    } else {
                         lights.setMode(Lights.Mode.TEAM);
                     }
                     intake.setState(Intake.States.OFF);
-                    if (flywheel.isReady && spindexer.getState() == Spindexer.States.RESTING && !spindexer.isRotating()){
-                        gamepad1.rumble(1,10,100);
-                        if (RT){
+                    if (flywheel.isReady && spindexer.getState() == Spindexer.States.RESTING && !spindexer.isRotating()) {
+                        gamepad1.rumble(1, 10, 100);
+                        if (RT) {
                             state = States.SHOOTING;
                             spindexer.setState(Spindexer.States.SHOOTING);
                         }
                     }
                     break;
-                case SHOOTING: if (spindexer.getMode() == Spindexer.Modes.SORTED){
-                    lights.setMode(Lights.Mode.INTAKING);
-                }else{
-                    lights.setMode(Lights.Mode.TEAM);
-                }
+                case SHOOTING:
+                    if (spindexer.getMode() == Spindexer.Modes.SORTED) {
+                        lights.setMode(Lights.Mode.INTAKING);
+                    } else {
+                        lights.setMode(Lights.Mode.TEAM);
+                    }
 
                     intake.setState(Intake.States.OFF);
-                    if (RT || spindexer.getState() == Spindexer.States.RESTING){
+                    if (spindexer.getState() == Spindexer.States.RESTING) {
                         state = States.RESTING;
                         spindexer.setState(Spindexer.States.RESTING);
                         spindexer.reset();
@@ -125,14 +127,14 @@ public class RobotBased extends LinearOpMode {
             }
 
             //Overrides
-            if (gamepad1.cross){
+            if (gamepad1.cross) {
                 intake.setState(Intake.States.OUTTAKE);
             }
-            if (square){
+            if (square) {
                 //climb
             }
-            if (triangle){
-                switch (spindexer.getMode()){
+            if (triangle) {
+                switch (spindexer.getMode()) {
                     case UNSORTED:
                         spindexer.setMode(Spindexer.Modes.SORTED);
                         break;
@@ -141,27 +143,24 @@ public class RobotBased extends LinearOpMode {
                         break;
                 }
             }
-            if (circle){
+            if (circle) {
                 spindexer.rotate();
             }
 
 
-
-
-
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
-           flywheel.update();
-           intake.update();
+            flywheel.update();
+            intake.update();
             spindexer.update();
             follower.update();
-        //    limeLight.update(telemetry);
+            //    limeLight.update(telemetry);
 
 
-            telemetry.addData("State",state);
+            telemetry.addData("State", state);
 
             telemetry.addData("X", follower.getPose().getX());
             telemetry.addData("Y", follower.getPose().getY());
-            telemetry.addData("Heading",follower.getPose().getHeading());
+            telemetry.addData("Heading", follower.getPose().getHeading());
 
             lights.setBall(spindexer.getSensors().getBallColor());
 
