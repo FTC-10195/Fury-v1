@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -10,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.Autonomous.Commands.Command;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
@@ -24,24 +24,27 @@ public class Solo extends LinearOpMode {
     private Intake intake = new Intake();
     private Lights lights = new Lights();
     private Spindexer spindexer = new Spindexer();
-    private Timer sequenceTimer = new Timer();
-    private int sequence = 0;
+    private Timer pathTimer = new Timer();
+    Command command;
+    private int path = 0;
     private int redX = 1;
-    private double redHeading = Math.toRadians(90);
-    private double calculateRedHeading(double heading){
-        if (redX == 1){
+
+    private double calculateRedHeading(double heading) {
+        if (redX == 1) {
             return 0;
         }
-        return 180 - (heading*2);
+        return 180 - (heading * 2);
     }
+
     PathChain shootPrescore,
-    intakeFirst, intakeFirst2;
+            intakeFirst, intakeFirst2;
+
     public void buildPaths() {
 
         final Pose startPose = new Pose(57.2836845026299 * redX, 135.4077434731531, Math.toRadians(90)); // Start Pose of our robot.
-        final Pose shootPose = new Pose(59.30539192071153 * redX, 120.07646221936741,Math.toRadians(90));
-        final Pose intakeFirstPose = new Pose(43 * redX, 82,Math.toRadians(180) + calculateRedHeading(180));
-        final Pose intakeFirst2Pose = new Pose(intakeFirstPose.getX() - (20 * redX),intakeFirstPose.getY());
+        final Pose shootPose = new Pose(59.30539192071153 * redX, 120.07646221936741, Math.toRadians(90));
+        final Pose intakeFirstPose = new Pose(43 * redX, 82, Math.toRadians(180) + calculateRedHeading(180));
+        final Pose intakeFirst2Pose = new Pose(intakeFirstPose.getX() - (20 * redX), intakeFirstPose.getY());
         follower.setStartingPose(startPose);
 
         shootPrescore = follower.pathBuilder()
@@ -86,18 +89,20 @@ public class Solo extends LinearOpMode {
         spindexer.initiate(hardwareMap);
         spindexer.setMode(Spindexer.Modes.UNSORTED);
 
+        command = new Command(intake, spindexer, flywheel, lights, follower);
+
         //Chamber
         boolean ready = false;
         spindexer.reset();
-        while (!opModeIsActive() && !isStopRequested()){
-            if (!spindexer.isRotating() && !ready){
+        while (!opModeIsActive() && !isStopRequested()) {
+            if (!spindexer.isRotating() && !ready) {
                 ready = true;
                 spindexer.rotateDegree(60);
             }
             boolean triangle = gamepad1.triangle && !previousGamepad1.triangle;
             previousGamepad1.copy(gamepad1);
 
-            if (triangle){
+            if (triangle) {
                 redX = redX * -1;
                 lights.switchTeamColor();
             }
@@ -117,7 +122,7 @@ public class Solo extends LinearOpMode {
             return;
         }
         while (opModeIsActive()) {
-            telemetry.addData("Auto Sequence", sequence);
+            telemetry.addData("Auto Sequence", path);
 
             follower.update();
             flywheel.update();
@@ -131,42 +136,22 @@ public class Solo extends LinearOpMode {
 
             telemetry.update();
 
-            switch (sequence){
+            switch (path) {
                 case 0:
-                    follower.followPath(shootPrescore);
+                    path = command.follow(path, 250, shootPrescore);
                     flywheel.setState(Flywheel.States.SPINNING);
-                    sequenceTimer.setWait(250);
-                    sequence++;
                     break;
                 case 1:
-                        if (sequenceTimer.doneWaiting()){
-                            spindexer.setState(Spindexer.States.SHOOTING);
-                            sequence++;
-                        }
+                    path = command.shoot(path);
                     break;
                 case 2:
-                    if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING){
-                        follower.followPath(intakeFirst,1,true);
-                        sequenceTimer.setWait(2000);
-                        sequence++;
-                    }
+                    path = command.follow(path, 2000, intakeFirst);
                     break;
                 case 3:
-                    if (sequenceTimer.doneWaiting()){
-                        sequence++;
-                        follower.followPath(intakeFirst2,.55,true);
-                        intake.setState(Intake.States.ON);
-                        spindexer.setState(Spindexer.States.INTAKING);
-                        sequenceTimer.setWait(4000);
-
-                    }
+                    path = command.follow(path, intakeFirst2);
                     break;
                 case 4:
-                    if (sequenceTimer.doneWaiting()){
-                        intake.setState(Intake.States.OFF);
-                        spindexer.setState(Spindexer.States.RESTING);
-                        spindexer.reset();
-                    }
+                    path = command.intake(path);
                     break;
             }
         }
