@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -10,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
+import org.firstinspires.ftc.teamcode.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @TeleOp
@@ -35,6 +39,9 @@ public class RobotBased extends LinearOpMode {
         Lights lights = new Lights();
         lights.initiate(hardwareMap);
         lights.setTeamColor(Lights.TeamColors.RED);
+        Turret turret = new Turret();
+        turret.initiate(hardwareMap);
+        turret.setGoal(lights.getTeamColor());
 
         Spindexer spindexer = new Spindexer();
         spindexer.initiate(hardwareMap);
@@ -48,6 +55,7 @@ public class RobotBased extends LinearOpMode {
 
         Gamepad previousGamepad1 = new Gamepad();
         while (opModeIsActive()) {
+            follower.setStartingPose(new Pose(72,72));
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean X = gamepad1.cross && !previousGamepad1.cross;
@@ -61,6 +69,16 @@ public class RobotBased extends LinearOpMode {
                 state = States.RESTING;
                 spindexer.setState(Spindexer.States.RESTING);
                 spindexer.reset();
+            }
+            if (RB){
+                switch (turret.getState()){
+                    case RESET:
+                        turret.setState(Turret.States.AIM);
+                        break;
+                    case AIM:
+                        turret.setState(Turret.States.RESET);
+                        break;
+                }
             }
             switch (state) {
                 case RESTING:
@@ -147,9 +165,14 @@ public class RobotBased extends LinearOpMode {
                 spindexer.rotate();
             }
 
+            turret.setGoal(lights.getTeamColor());
+            turret.setPose(follower.getPose());
+
+
 
             drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
             flywheel.update();
+            turret.update();
             intake.update();
             spindexer.update();
             follower.update();
@@ -168,6 +191,7 @@ public class RobotBased extends LinearOpMode {
 
             spindexer.status(telemetry);
             flywheel.status(telemetry);
+            turret.status(telemetry);
             telemetry.update();
         }
         lights.reset();

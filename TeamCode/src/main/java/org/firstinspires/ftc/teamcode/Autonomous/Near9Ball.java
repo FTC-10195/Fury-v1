@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class Solo extends LinearOpMode {
+public class Near9Ball extends LinearOpMode {
     private Follower follower;
     private Flywheel flywheel = new Flywheel();
     private Intake intake = new Intake();
@@ -44,10 +44,10 @@ public class Solo extends LinearOpMode {
 
         final Pose startPose = new Pose(57.2836845026299 * redX, 135.4077434731531, Math.toRadians(90)); // Start Pose of our robot.
         final Pose shootPose = new Pose(59.30539192071153 * redX, 120.07646221936741, Math.toRadians(90));
-        final Pose intakeFirstPose = new Pose(43 * redX, 82, calculateHeading(180));
-        final Pose intakeFirst2Pose = new Pose(intakeFirstPose.getX() - (23 * redX), intakeFirstPose.getY());
-        final Pose openGatePose = new Pose(12.855805597579424 * redX, 63.394856278366106, calculateHeading(180));
-        final Pose openGateControl = new Pose(53.615260968229954 * redX, 74.06959152798788, calculateHeading(180));
+        final Pose intakeFirstPose = new Pose(43 * redX, 85, calculateHeading(180));
+        final Pose intakeFirst2Pose = new Pose(23 * redX, intakeFirstPose.getY());
+        final Pose openGatePose = new Pose(12.855805597579424 * redX, 65.394856278366106, calculateHeading(180));
+        final Pose openGateControl = new Pose(43.615260968229954 * redX, 74.06959152798788, calculateHeading(180));
         final Pose shootPose2 = new Pose(45.31571482602118 * redX, 83.43721633888049, calculateHeading(180));
 
         follower.setStartingPose(startPose);
@@ -178,15 +178,13 @@ public class Solo extends LinearOpMode {
                     path += command.intake();
                     break;
                 case 5:
-                    path += command.follow(2000,gateOpen,.8);
-                    //When path done rotate spindexer 60 degrees
-                    if (path != 5){
+                    path += command.follow(3000,gateOpen,.8);
+                    if (command.completed()){
                         spindexer.rotateDegree(60);
                     }
                     break;
                 case 6:
                     path += command.follow(2000,shoot2);
-                    
                     break;
             }
         }

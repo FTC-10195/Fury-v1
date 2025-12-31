@@ -20,6 +20,10 @@ public class Command {
     static Flywheel flywheel;
     static Lights lights;
     static Follower follower;
+    private boolean done = false;
+    public boolean completed(){
+        return done;
+    };
     public Command(Intake intake, Spindexer spindexer, Flywheel flywheel, Lights lights, Follower follower){
         sequence = 0;
         Command.intake = intake;
@@ -28,8 +32,9 @@ public class Command {
         Command.lights = lights;
         Command.follower = follower;
     }
-    public static void reset(){
+    public void reset(){
         sequence = 0;
+        done = false;
     }
     public int follow(PathChain path){
         return follow(0,path,1);
@@ -50,10 +55,12 @@ public class Command {
             case 1:
                 if (sequenceTimer.doneWaiting()){
                     sequence = 0;
+                    done = true;
                     return 1;
                 }
                 break;
         }
+        done = false;
         return 0;
     }
     public int intake(){
@@ -70,10 +77,12 @@ public class Command {
                     spindexer.setState(Spindexer.States.RESTING);
                     spindexer.reset();
                     sequence = 0;
+                    done = true;
                     return 1;
                 }
                 break;
         }
+        done = false;
         return 0;
     }
     public int shoot(){
@@ -85,9 +94,11 @@ public class Command {
             case 1:
                 if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING){
                     sequence = 0;
+                    done = true;
                     return 1;
                 }
         }
+        done = false;
         return 0;
     }
 }
