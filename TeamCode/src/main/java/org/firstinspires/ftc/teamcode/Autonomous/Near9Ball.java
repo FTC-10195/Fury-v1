@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Timer;
+import org.firstinspires.ftc.teamcode.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
@@ -25,6 +26,7 @@ public class Near9Ball extends LinearOpMode {
     private Intake intake = new Intake();
     private Lights lights = new Lights();
     private Spindexer spindexer = new Spindexer();
+    private Turret turret = new Turret();
     private Timer pathTimer = new Timer();
     Command command;
     private int path = 0;
@@ -112,6 +114,8 @@ public class Near9Ball extends LinearOpMode {
         lights.setTeamColor(Lights.TeamColors.RED);
         spindexer.initiate(hardwareMap);
         spindexer.setMode(Spindexer.Modes.UNSORTED);
+        turret.initiate(hardwareMap);
+        turret.setState(Turret.States.MANUAL);
 
         command = new Command(intake, spindexer, flywheel, lights, follower);
 
@@ -154,6 +158,7 @@ public class Near9Ball extends LinearOpMode {
             lights.update(telemetry);
             spindexer.update();
 
+
             flywheel.status(telemetry);
             spindexer.status(telemetry);
 
@@ -162,11 +167,16 @@ public class Near9Ball extends LinearOpMode {
 
             switch (path) {
                 case 0:
-                    path += command.follow(250, shootPrescore);
+                    turret.setOverride(.25);
+                    path += command.follow(750, shootPrescore);
                     flywheel.setState(Flywheel.States.SPINNING);
                     break;
                 case 1:
                     path += command.shoot();
+                    if (command.completed()){
+                        turret.setOverride(.5);
+                        flywheel.setState(Flywheel.States.RESTING);
+                    }
                     break;
                 case 2:
                     path += command.follow(2000, intakeFirst);
@@ -178,13 +188,18 @@ public class Near9Ball extends LinearOpMode {
                     path += command.intake();
                     break;
                 case 5:
-                    path += command.follow(3000,gateOpen,.8);
+                    path += command.follow(2000,gateOpen,.8);
                     if (command.completed()){
                         spindexer.rotateDegree(60);
+                        flywheel.setState(Flywheel.States.SPINNING);
+                        turret.setOverride(.75);
                     }
                     break;
                 case 6:
                     path += command.follow(2000,shoot2);
+                    break;
+                case 7:
+                    path += command.shoot();
                     break;
             }
         }

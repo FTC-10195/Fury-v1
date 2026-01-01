@@ -11,12 +11,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Turret {
     public enum States{
         RESET, //Go to 0
-        AIM //Aim at goal
+        AIM, //Aim at goal
+        MANUAL
     }
     Servo rightServo; //Domiant
     Servo leftServo;
     public static double startPos = .5;
     public static double maxDegrees = 180; //-90 to 90
+    public static double overridePos = .75;
     public static double degreesToTicks(double degrees){
         return startPos - (degrees/maxDegrees);
     }
@@ -76,14 +78,20 @@ public class Turret {
         telemetry.addData("Robot heading degrees", Math.toDegrees(robotPose.getHeading()));
         telemetry.addData("Degrees", Math.toDegrees(calculateHeading()));
     }
+    public void setOverride(double pos){
+        overridePos = pos;
+    }
     public void update(){
-        target = 0;
+
         switch (state){
             case RESET:
                 target = startPos;
                 break;
             case AIM:
                 target = degreesToTicks(Math.toDegrees(calculateHeading()));
+                break;
+            case MANUAL:
+                target = overridePos;
                 break;
         }
         if (target > 1){

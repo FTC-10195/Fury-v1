@@ -2,11 +2,15 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
+import com.pedropathing.control.FilteredPIDFCoefficients;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
@@ -15,6 +19,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+import java.nio.file.Path;
 
 @TeleOp
 public class RobotBased extends LinearOpMode {
@@ -27,9 +33,12 @@ public class RobotBased extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        Pose holdPose = new Pose(0,0,0);
+        boolean hold = false;
         States state = States.RESTING;
         waitForStart();
         Follower follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(72,72));
         Flywheel flywheel = new Flywheel();
         flywheel.initiate(hardwareMap);
         Intake intake = new Intake();
@@ -55,7 +64,10 @@ public class RobotBased extends LinearOpMode {
 
         Gamepad previousGamepad1 = new Gamepad();
         while (opModeIsActive()) {
-            follower.setStartingPose(new Pose(72,72));
+            follower.setDrivePIDFCoefficients(new FilteredPIDFCoefficients(100,0, .1,6,0));
+            follower.setSecondaryHeadingPIDFCoefficients(new PIDFCoefficients(100,0,0.1,0));
+            follower.setTranslationalPIDFCoefficients(new PIDFCoefficients(100,0,0.1,0));
+
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean X = gamepad1.cross && !previousGamepad1.cross;
@@ -96,11 +108,7 @@ public class RobotBased extends LinearOpMode {
                     if (RT) {
                         state = States.PREPARING_TO_FIRE;
                         flywheel.setState(Flywheel.States.SPINNING);
-                        if (spindexer.getMode() == Spindexer.Modes.SORTED) {
-                            spindexer.setState(Spindexer.States.CHAMBER);
-                        } else {
-                            spindexer.rotateDegree(60);
-                        }
+                        spindexer.setState(Spindexer.States.CHAMBER);
                     }
                     break;
                 case INTAKING:
@@ -149,7 +157,12 @@ public class RobotBased extends LinearOpMode {
                 intake.setState(Intake.States.OUTTAKE);
             }
             if (square) {
-                //climb
+                hold = !hold;
+                if (!hold){
+                    follower.breakFollowing();
+                }else{
+                    holdPose = follower.getPose();
+                }
             }
             if (triangle) {
                 switch (spindexer.getMode()) {
@@ -168,9 +181,13 @@ public class RobotBased extends LinearOpMode {
             turret.setGoal(lights.getTeamColor());
             turret.setPose(follower.getPose());
 
+            if (hold){
+                follower.holdPoint(holdPose);
+            }else{
+                follower.breakFollowing();
+                drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
+            }
 
-
-            drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
             flywheel.update();
             turret.update();
             intake.update();
@@ -180,6 +197,8 @@ public class RobotBased extends LinearOpMode {
 
 
             telemetry.addData("State", state);
+            telemetry.addData("Hold", hold);
+            telemetry.addData("HoldPose",holdPose);
 
             telemetry.addData("X", follower.getPose().getX());
             telemetry.addData("Y", follower.getPose().getY());

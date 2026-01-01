@@ -25,7 +25,7 @@ public class Flywheel {
     public static double kD = 0;
     public static double kF = 0.00041;
     public static double tolerance = 100;
-    public static double maxPower = .92;
+    public static double maxPower = 1;
     public double currentVelocity = 0.0000;
     public static double rMod = 1;
     public static double lMod = -1;
@@ -90,7 +90,9 @@ public class Flywheel {
           case SPINNING:
             //  power = maxPower;
               power = pidfController.run() + (kF * targetVelocity);
-              if (overideTimer.doneWaiting() || Math.abs(targetVelocity - currentVelocity) < tolerance)
+              if (overideTimer.doneWaiting() || Math.abs(targetVelocity - currentVelocity) < tolerance){
+                  isReady = true;
+              }
               break;
       }
 

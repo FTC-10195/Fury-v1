@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Timer;
 @Config
 public class Command {
     static Timer sequenceTimer = new Timer();
-    public static long intakeTime = 4000;
+    public static long intakeTime = 3000;
     static int sequence = 0;
 
     static Intake intake;

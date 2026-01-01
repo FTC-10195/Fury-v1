@@ -47,6 +47,7 @@ public class Spindexer {
     Servo leftServo;
     Kicker kicker = new Kicker(); //Child subsystem because kicker is completely dependant on spindexer
     BallDetector ballDetector = new BallDetector();
+    Slot[] slots = {new Slot(),new Slot(),new Slot()};
     public static double targetPos = intakeStartPos;
     boolean rotating = false;
     //Timer to determine if the spindexer is rotating or not
@@ -97,7 +98,7 @@ public class Spindexer {
 
     }
 
-    public void rotateDegree(int degree) {
+    public void rotateDegree(double degree) {
 
         targetPos += degreesToTicks(degree);
         rotateTimer.setWait(ticksToTime(degreesToTicks(degree)));
@@ -123,6 +124,7 @@ public class Spindexer {
 
     public void shoot() {
         kicker.kick();
+        Slot.shoot(slots,targetPos);
         ballsShot++;
     }
 
@@ -144,6 +146,9 @@ public class Spindexer {
             case 1:
                 //if ball rotate
                 if (savedBall != LimeLight.BallColors.NONE) {
+                    slots[Slot.getIntakeSlot(targetPos)].setColor(savedBall);
+                    slots[Slot.getIntakeSlot(targetPos)].setId(Slot.getIntakeSlot(targetPos));
+
                     ballsIntaked++;
                     rotate();
                     sequence++;
@@ -161,130 +166,27 @@ public class Spindexer {
         //If spindexer is chambered then the job is complete, don't do anything
         if (chambered) {
             setState(States.RESTING);
+            sequence = 1;
             return;
         }
-
-
-        switch (sequence) {
+        switch (sequence){
             case 1:
-                saveBall();
-                //If target
-                if (savedBall == motif[ballsShot]) {
-                    //Shooting
-                    rotateDegree(180);
-                } else {
-                    if (rotations >= 2) {
-                        chambered = true;
-                        rotateDegree(60);
-                        return;
-                    }
-                    rotate();
-                    rotateTimer.add(sortedShootingScanPadding);
+                if (mode == Modes.UNSORTED){
+                    rotateDegree(60);
+                }else{
+                    rotateDegree(Slot.rotateToColor(slots,targetPos,motif[ballsShot],60));
                 }
                 sequence++;
                 break;
             case 2:
-                //Finished rotating
-                if (!rotating) {
-                    //If target -> shoot
-                    if (savedBall == motif[ballsShot]) {
-                        //Usually shoot here, just say chambered
-                        chambered = true;
-                    }//Not target? check again
-                    sequence = 1;
-                }
-                break;
-            case 3:
-                if (!rotating) {
-                    sequence = 1;
+                if (!rotating){
                     chambered = true;
                 }
                 break;
         }
     }
 
-    boolean forceEndSortedShooting = false;
-
-    public void sortedShootingSequence() {
-        if (chambered) {
-            //FIRE
-            shoot();
-            sequence = -1;
-            chambered = false;
-            forceEndSortedShooting = false;
-            return;
-        }
-        if (ballsShot >= 3 && sequence == 1 || forceEndSortedShooting) {
-            if (rotating){
-                return;
-            }
-            ballsShot = 0;
-            state = States.RESTING;
-            reset();
-            return;
-        }
-        switch (sequence) {
-            //-1 and 0 are special cases that is only accessible when chambered
-            case -1:
-                if (kicker.getState() == Kicker.States.RESTING && !rotating) {
-                    reset();
-                    sequence++;
-                }
-                break;
-            case 0:
-                if (!rotating) {
-                    sequence++;
-                }
-                break;
-            case 1:
-                if (rotating){
-                    return;
-                }
-                saveBall();
-                //If target -> rotate to shoot
-                if (savedBall == motif[ballsShot]) {
-                    rotateDegree(180);
-                    sequence++;
-                    return;
-                } else {
-                    rotate();
-                    rotateTimer.add(sortedShootingScanPadding);
-                }
-                //This means it reset and cant find target ball
-                //End this whole sequence
-                if (rotations == 0) {
-                    forceEndSortedShooting = true;
-                }
-                sequence++;
-                break;
-            case 2:
-                //If ball
-                if (!rotating) {
-                    if (savedBall == motif[ballsShot]) {
-                        shoot();
-                        sequence++;
-                    } else {
-                        sequence = 1;
-                    }
-                }
-                break;
-            case 3:
-                //Done shooting
-                if (kicker.getState() == Kicker.States.RESTING) {
-                    reset();
-                    sequence++;
-                }
-                break;
-            case 4:
-                //Done rotating
-                if (!rotating) {
-                    sequence = 1;
-                }
-                break;
-        }
-    }
-
-    public void rapidFireSequence() {
+    public void shootingSequence() {
         //AKA unsorted shooting
         if (ballsShot >= rapidFireShootNumber && sequence == 1) {
             ballsShot = 0;
@@ -303,8 +205,15 @@ public class Spindexer {
             case 2:
                 //Ball is shot
                 if (kicker.getState() == Kicker.States.RESTING) {
-                    rotate();
                     sequence++;
+                    if (ballsShot >= 3){
+                        return;
+                    }
+                    if (mode == Modes.UNSORTED) {
+                        rotate();
+                    }else{
+                        rotateDegree(Slot.rotateToColor(slots, targetPos, motif[ballsShot],120));
+                    }
                 }
                 break;
             case 3:
@@ -389,11 +298,7 @@ public class Spindexer {
                 chamberSequence();
                 break;
             case SHOOTING:
-                if (mode == Modes.SORTED) {
-                    sortedShootingSequence();
-                } else if (mode == Modes.UNSORTED) {
-                    rapidFireSequence();
-                }
+                shootingSequence();
                 break;
         }
     }
@@ -409,6 +314,9 @@ public class Spindexer {
         telemetry.addData("SpindexerSequence", sequence);
         telemetry.addData("Spindexer rotations", rotations);
         telemetry.addData("Spindexer mode", mode);
+        for (int i = 0; i < slots.length ; i++){
+            telemetry.addData("Slots: " + i, slots[i]);
+        }
         kicker.status(telemetry);
         ballDetector.status(telemetry);
     }
