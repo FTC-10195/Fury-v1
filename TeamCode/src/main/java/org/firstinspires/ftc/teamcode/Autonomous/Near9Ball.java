@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Autonomous.Commands.Command;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.FollowerHandler;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
@@ -28,6 +29,7 @@ public class Near9Ball extends LinearOpMode {
     private Spindexer spindexer = new Spindexer();
     private Turret turret = new Turret();
     private Timer pathTimer = new Timer();
+    FollowerHandler followerHandler = new FollowerHandler();
     Command command;
     private int path = 0;
     private int redX = 1;
@@ -105,8 +107,8 @@ public class Near9Ball extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Gamepad previousGamepad1 = new Gamepad();
-
-        follower = Constants.createFollower(hardwareMap);
+        followerHandler.initiate(hardwareMap);
+        follower = followerHandler.getFollower();
 
         flywheel.initiate(hardwareMap);
         intake.initiate(hardwareMap);
@@ -115,7 +117,7 @@ public class Near9Ball extends LinearOpMode {
         spindexer.initiate(hardwareMap);
         spindexer.setMode(Spindexer.Modes.UNSORTED);
         turret.initiate(hardwareMap);
-        turret.setState(Turret.States.MANUAL);
+        turret.setState(Turret.States.AIM);
 
         command = new Command(intake, spindexer, flywheel, lights, follower);
 
@@ -152,10 +154,12 @@ public class Near9Ball extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Auto path", path);
 
-            follower.update();
+            followerHandler.update();
+            followerHandler.save();
             flywheel.update();
             intake.update();
             lights.update(telemetry);
+            lights.save();
             spindexer.update();
 
 
@@ -167,14 +171,12 @@ public class Near9Ball extends LinearOpMode {
 
             switch (path) {
                 case 0:
-                    turret.setOverride(.25);
                     path += command.follow(750, shootPrescore);
                     flywheel.setState(Flywheel.States.SPINNING);
                     break;
                 case 1:
                     path += command.shoot();
                     if (command.completed()){
-                        turret.setOverride(.5);
                         flywheel.setState(Flywheel.States.RESTING);
                     }
                     break;
@@ -192,7 +194,6 @@ public class Near9Ball extends LinearOpMode {
                     if (command.completed()){
                         spindexer.rotateDegree(60);
                         flywheel.setState(Flywheel.States.SPINNING);
-                        turret.setOverride(.75);
                     }
                     break;
                 case 6:

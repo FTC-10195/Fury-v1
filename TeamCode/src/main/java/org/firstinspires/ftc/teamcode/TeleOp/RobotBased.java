@@ -1,26 +1,18 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
-
-import com.pedropathing.control.FilteredPIDFCoefficients;
-import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.FollowerHandler;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-import java.nio.file.Path;
 
 @TeleOp
 public class RobotBased extends LinearOpMode {
@@ -37,7 +29,9 @@ public class RobotBased extends LinearOpMode {
         boolean hold = false;
         States state = States.RESTING;
         waitForStart();
-        Follower follower = Constants.createFollower(hardwareMap);
+        FollowerHandler followerHandler = new FollowerHandler();
+        followerHandler.initiate(hardwareMap);
+        Follower follower = followerHandler.getFollower();
         follower.setStartingPose(new Pose(72,72));
         Flywheel flywheel = new Flywheel();
         flywheel.initiate(hardwareMap);
@@ -64,9 +58,6 @@ public class RobotBased extends LinearOpMode {
 
         Gamepad previousGamepad1 = new Gamepad();
         while (opModeIsActive()) {
-            follower.setDrivePIDFCoefficients(new FilteredPIDFCoefficients(100,0, .1,6,0));
-            follower.setSecondaryHeadingPIDFCoefficients(new PIDFCoefficients(100,0,0.1,0));
-            follower.setTranslationalPIDFCoefficients(new PIDFCoefficients(100,0,0.1,0));
 
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
@@ -76,7 +67,11 @@ public class RobotBased extends LinearOpMode {
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger <= 0.1;
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
+            boolean options = gamepad1.options && !previousGamepad1.options;
             previousGamepad1.copy(gamepad1);
+            if (options){
+                lights.switchTeamColor();
+            }
             if (LB) {
                 state = States.RESTING;
                 spindexer.setState(Spindexer.States.RESTING);
@@ -158,10 +153,14 @@ public class RobotBased extends LinearOpMode {
             }
             if (square) {
                 hold = !hold;
-                if (!hold){
-                    follower.breakFollowing();
-                }else{
+                if (hold){
                     holdPose = follower.getPose();
+                    followerHandler.setBrakeMode();
+
+                    follower.updateConstants();
+                    follower.holdPoint(holdPose);
+                }else{
+                    follower.breakFollowing();
                 }
             }
             if (triangle) {
@@ -178,21 +177,21 @@ public class RobotBased extends LinearOpMode {
                 spindexer.rotate();
             }
 
+
             turret.setGoal(lights.getTeamColor());
             turret.setPose(follower.getPose());
 
-            if (hold){
-                follower.holdPoint(holdPose);
-            }else{
-                follower.breakFollowing();
-                drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
+            if (turret.getState() == Turret.States.AIM) {
+                flywheel.setTargetVelocity(Flywheel.calculateTargetVelocity(follower.getPose(),turret.getGoal()));
             }
-
             flywheel.update();
             turret.update();
             intake.update();
             spindexer.update();
-            follower.update();
+            followerHandler.update();
+            if (!hold) {
+                drivetrain.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
+            }
             //    limeLight.update(telemetry);
 
 

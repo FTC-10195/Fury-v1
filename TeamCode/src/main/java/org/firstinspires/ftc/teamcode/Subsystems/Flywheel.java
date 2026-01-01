@@ -4,9 +4,9 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.control.PIDFController;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -17,9 +17,13 @@ public class Flywheel {
         SPINNING,
         RESTING,
     }
+
     public boolean isReady = false;
     public static long waitTime = 500;
-    public static double targetVelocity = 1600;
+    public static double maxVelocity = 1700;
+    public static double minVelocity = 1400;
+    public static double defaultVelocity = 1600;
+    public static double kN = 1.2;
     public static double kP = 0.0012;
     public static double kI = 0;
     public static double kD = 0;
@@ -27,8 +31,11 @@ public class Flywheel {
     public static double tolerance = 100;
     public static double maxPower = 1;
     public double currentVelocity = 0.0000;
+    public static double maxDistance = 150;
+    public static double minDistance = 30;
     public static double rMod = 1;
     public static double lMod = -1;
+    private double targetVelocity = defaultVelocity;
 
     Timer overideTimer = new Timer();
 
@@ -65,6 +72,20 @@ public class Flywheel {
     long timeSnapshot = System.currentTimeMillis();
     double timeDifference = 0;
     double power = 0;
+    static double distance = 0;
+    public static double calculateTargetVelocity(Pose robotPose, Pose goal){
+        double deltaX = goal.getX() - robotPose.getX();
+        double deltaY = goal.getY() - robotPose.getY();
+        distance = Math.sqrt(Math.pow(deltaX,2) + Math.pow(deltaY,2));
+        distance = distance - minDistance;
+        if (distance < minDistance){
+            distance = minDistance;
+        }
+        return minVelocity + Math.pow(distance/(maxDistance - minDistance),kN) * (maxVelocity - minVelocity);
+    }
+    public void setTargetVelocity(double targetVelocity){
+        this.targetVelocity = targetVelocity;
+    }
 
     public void update() {
         pidfController.setCoefficients((new PIDFCoefficients(kP,kI,kD,0)));
@@ -103,6 +124,7 @@ public class Flywheel {
         flywheel2.setPower(power * lMod);
     }
     public void status (Telemetry telemetry) {
+        telemetry.addData("Distance",distance);
         telemetry.addData("Calculated velocity", currentVelocity);
         telemetry.addData("Calculated VelocityError", targetVelocity - currentVelocity);
         telemetry.addData("Current Pos", flywheel.getCurrentPosition());

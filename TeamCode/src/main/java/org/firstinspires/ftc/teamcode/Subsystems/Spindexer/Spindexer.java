@@ -180,6 +180,12 @@ public class Spindexer {
                 break;
             case 2:
                 if (!rotating){
+                   // kicker.chamber();
+                    sequence++;
+                }
+                break;
+            case 3:
+                if (kicker.isReady) {
                     chambered = true;
                 }
                 break;

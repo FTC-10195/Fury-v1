@@ -22,8 +22,8 @@ public class Turret {
     public static double degreesToTicks(double degrees){
         return startPos - (degrees/maxDegrees);
     }
-    public static Pose redGoal = new Pose(134,138);
-    public static Pose blueGoal = new Pose(8,138);
+    public static Pose redGoal = new Pose(144,144);
+    public static Pose blueGoal = new Pose(0,144);
     private Pose goal = redGoal;
     private Pose robotPose = new Pose(0,0,Math.toRadians(0));
     private double target = 0;
@@ -55,10 +55,22 @@ public class Turret {
                 break;
         }
     }
+    public static Pose getGoal(Lights.TeamColors teamColor){
+        switch (teamColor){
+            case RED:
+                return  redGoal;
+            case BLUE:
+                return blueGoal;
+        }
+        return redGoal;
+    }
+    public Pose getGoal(){
+        return goal;
+    }
     public double calculateHeading(){
         deltaX = goal.getX() - robotPose.getX();
         deltaY = goal.getY() - robotPose.getY();
-        theta = Math.atan(deltaX/deltaY);
+        theta = Math.atan2(deltaY,deltaX);
 
         return theta - robotPose.getHeading();
     }

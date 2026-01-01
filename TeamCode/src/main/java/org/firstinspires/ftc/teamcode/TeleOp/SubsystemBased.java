@@ -45,7 +45,12 @@ public class SubsystemBased extends LinearOpMode {
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <= 0.1;
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             boolean square = gamepad1.square && !previousGamepad1.square;
+            boolean options = gamepad1.options && !previousGamepad1.options;
             previousGamepad1.copy(gamepad1);
+
+            if (options){
+                lights.switchTeamColor();
+            }
             if (LB){
                 spindexer.reset();
                 spindexer.setState(Spindexer.States.RESTING);
