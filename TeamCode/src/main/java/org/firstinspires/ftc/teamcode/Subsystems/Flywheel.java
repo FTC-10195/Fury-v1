@@ -21,8 +21,8 @@ public class Flywheel {
     public boolean isReady = false;
     public static long waitTime = 500;
     public static double maxVelocity = 1700;
-    public static double minVelocity = 1400;
-    public static double defaultVelocity = 1600;
+    public static double minVelocity = 1300;
+    public static double defaultVelocity = 1500;
     public static double kN = 1.2;
     public static double kP = 0.0012;
     public static double kI = 0;

@@ -62,7 +62,7 @@ public class Spindexer {
     int rotations = 0; //number of 120 degree rotations
 
     //If this is true that means we can shoot the first shot in the shooting sequence
-    boolean chambered = false;
+    public boolean chambered = false;
     LimeLight.BallColors[] motif = {LimeLight.BallColors.P, LimeLight.BallColors.P, LimeLight.BallColors.G};
 
     private long ticksToTime(double ticks) {
@@ -75,6 +75,12 @@ public class Spindexer {
 
     public boolean isRotating() {
         return rotating;
+    }
+    public int getShotsFired(){
+        return ballsShot;
+    }
+    public int getBallsIntaked(){
+        return ballsIntaked;
     }
 
     //Move one slot

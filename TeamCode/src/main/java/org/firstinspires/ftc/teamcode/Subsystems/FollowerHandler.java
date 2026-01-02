@@ -16,7 +16,7 @@ public class FollowerHandler {
     public static double brakePTranslational = 0.6;
 
     public static double pathingDTranslational  = 0.1;
-    public static double pathingPHeading = 3;
+    public static double pathingPHeading = 2.5;
     public static double pathingPTranslational = 0.3;
 
     public static double mass = 12;
@@ -45,6 +45,10 @@ public class FollowerHandler {
     public void setPose(Pose newPose){
         pose = newPose;
         load();
+    }
+    public void setStartingPose(Pose newPose){
+        pose = newPose;
+        follower.setStartingPose(newPose);
     }
     public Follower getFollower(){
         return follower;

@@ -14,10 +14,10 @@ public class Turret {
         AIM, //Aim at goal
         MANUAL
     }
-    Servo rightServo; //Domiant
+    Servo rightServo; //Dominant
     Servo leftServo;
     public static double startPos = .5;
-    public static double maxDegrees = 180; //-90 to 90
+    public static double maxDegrees = 230; //-135 to 135
     public static double overridePos = .75;
     public static double degreesToTicks(double degrees){
         return startPos - (degrees/maxDegrees);

@@ -7,12 +7,12 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.Subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Subsystems.Lights;
+import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Kicker;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
 import org.firstinspires.ftc.teamcode.Subsystems.Timer;
 @Config
 public class Command {
     static Timer sequenceTimer = new Timer();
-    public static long intakeTime = 3000;
     static int sequence = 0;
 
     static Intake intake;
@@ -35,6 +35,25 @@ public class Command {
     public void reset(){
         sequence = 0;
         done = false;
+    }
+
+    public long getTimePassed(){
+        return sequenceTimer.getTimePassed();
+    }
+    public int delay(long time){
+        switch (sequence){
+            case 0:
+                sequenceTimer.setWait(time);
+                sequence++;
+                break;
+            case 1:
+                if (sequenceTimer.doneWaiting()){
+                    done = true;
+                    return 1;
+                }
+                break;
+        }
+        return 0;
     }
     public int follow(PathChain path){
         return follow(0,path,1);
@@ -63,19 +82,30 @@ public class Command {
         done = false;
         return 0;
     }
-    public int intake(){
+    public int startIntaking(){
+        intake.setState(Intake.States.ON);
+        spindexer.setState(Spindexer.States.INTAKING);
+        return 1;
+    }
+    public int stopIntaking(){
+        intake.setState(Intake.States.OFF);
+        return 1;
+    }
+    public int resetSpindexer(){
+        spindexer.setState(Spindexer.States.RESTING);
+        spindexer.reset();
+        return 1;
+    }
+    public int intake(long intakeTime){
         switch (sequence){
             case 0:
-                intake.setState(Intake.States.ON);
-                spindexer.setState(Spindexer.States.INTAKING);
+                startIntaking();
                 sequenceTimer.setWait(intakeTime);
                 sequence++;
                 break;
             case 1:
-                if (sequenceTimer.doneWaiting()){
-                    intake.setState(Intake.States.OFF);
-                    spindexer.setState(Spindexer.States.RESTING);
-                    spindexer.reset();
+                if (sequenceTimer.doneWaiting() || spindexer.getBallsIntaked() >= 3){
+                    stopIntaking();
                     sequence = 0;
                     done = true;
                     return 1;
@@ -92,7 +122,7 @@ public class Command {
                 sequence++;
                 break;
             case 1:
-                if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING){
+                if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING || (spindexer.getShotsFired() >= 3 && spindexer.getKicker().getState() == Kicker.States.RETURNING)){
                     sequence = 0;
                     done = true;
                     return 1;
