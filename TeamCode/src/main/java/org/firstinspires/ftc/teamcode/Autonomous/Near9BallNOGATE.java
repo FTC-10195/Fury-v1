@@ -7,7 +7,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Autonomous.Commands.Command;
@@ -18,12 +17,10 @@ import org.firstinspires.ftc.teamcode.Subsystems.Lights;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Kicker;
 import org.firstinspires.ftc.teamcode.Subsystems.Spindexer.Spindexer;
-import org.firstinspires.ftc.teamcode.Subsystems.Timer;
 import org.firstinspires.ftc.teamcode.Subsystems.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous
-public class Near9Ball extends LinearOpMode {
+public class Near9BallNOGATE extends LinearOpMode {
     private Follower follower;
     private Flywheel flywheel = new Flywheel();
     private Intake intake = new Intake();
@@ -57,8 +54,6 @@ public class Near9Ball extends LinearOpMode {
         final Pose shootPose = new Pose(calculateX(59.30539192071153), 120.07646221936741, Math.toRadians(90));
         final Pose intakeFirstPose = new Pose(calculateX(43), 85, calculateHeading(180));
         final Pose intakeFirst2Pose = new Pose(calculateX(20), intakeFirstPose.getY(),calculateHeading(180));
-        final Pose openGatePose = new Pose(calculateX(13.855805597579424), 79.55521936459908, calculateHeading(180));
-        final Pose openGateControl = new Pose(calculateX(39.19468608169441), 79.70499243570346, calculateHeading(180));
         final Pose shootPose2 = new Pose(calculateX(50.54415658093797), 86.70499243570347, calculateHeading(180));
         final Pose intakeSecondPose = new Pose(calculateX(45.75141830559758), 59.03782148260212, calculateHeading(180));
         final Pose intakeSecond2Pose = new Pose(calculateX(10.452344931921337),58.98940998487141,calculateHeading(180));
@@ -96,20 +91,10 @@ public class Near9Ball extends LinearOpMode {
                 )
                 .setGlobalConstantHeadingInterpolation(calculateHeading(180))
                 .build();
-        gateOpen = follower.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                intakeFirst2Pose,
-                                openGateControl,
-                                openGatePose
-                        )
-                )
-                .setGlobalConstantHeadingInterpolation(calculateHeading(180))
-                .build();
         shoot2 = follower.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                openGatePose,
+                                intakeFirst2Pose,
                                 shootPose2
                         )
                 )
@@ -256,7 +241,7 @@ public class Near9Ball extends LinearOpMode {
                     path += command.follow(4000,intakeFirst2, .45);
                     command.startIntaking();
                 case 4:
-                    path += command.follow(2000, gateOpen);
+                    path += command.delay(750);
                     if (command.completed()) {
                         flywheel.setState(Flywheel.States.SPINNING);
                     }

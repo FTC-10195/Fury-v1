@@ -46,7 +46,16 @@ public class SubsystemBased extends LinearOpMode {
             boolean circle = gamepad1.circle && !previousGamepad1.circle;
             boolean square = gamepad1.square && !previousGamepad1.square;
             boolean options = gamepad1.options && !previousGamepad1.options;
+            boolean up = gamepad1.dpad_up && !previousGamepad1.dpad_up;
+            boolean down = gamepad1.dpad_down && !previousGamepad1.dpad_down;
             previousGamepad1.copy(gamepad1);
+
+            if (up){
+                flywheel.add();
+            }
+            if (down){
+                flywheel.sub();
+            }
 
             if (options){
                 lights.switchTeamColor();
@@ -100,6 +109,7 @@ public class SubsystemBased extends LinearOpMode {
             lights.update(telemetry);
 
             spindexer.status(telemetry);
+            flywheel.setDefaultVelocity();
             flywheel.status(telemetry);
             telemetry.update();
         }

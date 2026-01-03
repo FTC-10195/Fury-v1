@@ -2,18 +2,18 @@ package org.firstinspires.ftc.teamcode.Subsystems.Spindexer;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Subsystems.LimeLight;
 
 @Config
 public class BallDetector {
 
     //Will tune thresholds more, hopefully it's this simple (GREEN VS BLUE) but it might not be
-    public static int alphaThreshold = 250;
+    public static int alphaThreshold1 = 250;
+    public static int alphaThreshold2 = 600;
+
     ColorSensor colorSensor;
     ColorSensor colorSensor2;
     public boolean active = true;
@@ -22,7 +22,7 @@ public class BallDetector {
         colorSensor2 = hardwareMap.colorSensor.get("color2");
     }
     public LimeLight.BallColors getBallColor(){
-        if (colorSensor.alpha() < alphaThreshold && colorSensor2.alpha() < alphaThreshold){
+        if (colorSensor.alpha() < alphaThreshold1 && colorSensor2.alpha() < alphaThreshold2){
             return LimeLight.BallColors.NONE;
         }
         if (colorSensor.green() >= colorSensor.blue()){

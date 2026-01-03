@@ -20,7 +20,11 @@ public class FollowerHandler {
     public static double pathingPTranslational = 0.3;
 
     public static double mass = 12;
-    public static Pose defaultPose = new Pose(72,72,0);
+    public static Pose defaultPose = new Pose(72,72,Math.toRadians(90));
+    public static Pose blueHumanPlayer = new Pose(132.89211422087746,10.021180030257188,Math.toRadians(0));
+    public static Pose redHumanPlayer = new Pose(11.766546898638428,10.021180030257188,Math.toRadians(0));
+
+
     public static Pose pose;
     Follower follower;
     public void initiate(HardwareMap hardwareMap){
@@ -30,6 +34,21 @@ public class FollowerHandler {
             pose = defaultPose;
         }
         follower.setStartingPose(pose);
+    }
+    public void forceRelocalize(Lights.TeamColors teamColor){
+       switch (teamColor){
+           case NONE:
+               follower.setStartingPose(defaultPose);
+               follower.setPose(defaultPose);
+               break;
+           case BLUE:
+               follower.setStartingPose(blueHumanPlayer);
+               follower.setPose(blueHumanPlayer);
+               break;
+           case RED:
+               follower.setStartingPose(redHumanPlayer);
+               follower.setPose(redHumanPlayer);
+       }
     }
     public void save(){
         pose = follower.getPose();
@@ -49,6 +68,7 @@ public class FollowerHandler {
     public void setStartingPose(Pose newPose){
         pose = newPose;
         follower.setStartingPose(newPose);
+        follower.setPose(newPose);
     }
     public Follower getFollower(){
         return follower;

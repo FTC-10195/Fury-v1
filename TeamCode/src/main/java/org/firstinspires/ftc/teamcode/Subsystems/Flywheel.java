@@ -19,11 +19,12 @@ public class Flywheel {
     }
 
     public boolean isReady = false;
+    public static double manualVelocityGain = 50;
     public static long waitTime = 500;
-    public static double maxVelocity = 1700;
-    public static double minVelocity = 1300;
-    public static double defaultVelocity = 1500;
-    public static double kN = 1.2;
+    public static double maxVelocity = 2100;
+    public static double minVelocity = 1450;
+    public static double defaultVelocity = 1600;
+    public static double kN = 1.3;
     public static double kP = 0.0012;
     public static double kI = 0;
     public static double kD = 0;
@@ -36,6 +37,7 @@ public class Flywheel {
     public static double rMod = 1;
     public static double lMod = -1;
     private double targetVelocity = defaultVelocity;
+    private int manualVelocityNumber = 0;
 
     Timer overideTimer = new Timer();
 
@@ -49,7 +51,7 @@ public class Flywheel {
     }
 
 
-    public States currentState = States.SPINNING;
+    public States currentState = States.RESTING;
     DcMotorEx flywheel;
     DcMotorEx flywheel2;
     public void initiate(HardwareMap hardwareMap) {
@@ -85,6 +87,15 @@ public class Flywheel {
     }
     public void setTargetVelocity(double targetVelocity){
         this.targetVelocity = targetVelocity;
+    }
+    public void setDefaultVelocity(){
+        this.targetVelocity = defaultVelocity + (manualVelocityNumber * manualVelocityGain);
+    }
+    public void add(){
+        manualVelocityNumber++;
+    }
+    public void sub(){
+        manualVelocityNumber--;
     }
 
     public void update() {

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Timer;
 @Config
 public class Command {
     static Timer sequenceTimer = new Timer();
-    static int sequence = 0;
+    int sequence = 0;
 
     static Intake intake;
     static Spindexer spindexer;
@@ -122,7 +122,7 @@ public class Command {
                 sequence++;
                 break;
             case 1:
-                if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING || (spindexer.getShotsFired() >= 3 && spindexer.getKicker().getState() == Kicker.States.RETURNING)){
+                if (!spindexer.isRotating() && spindexer.getState() == Spindexer.States.RESTING){
                     sequence = 0;
                     done = true;
                     return 1;

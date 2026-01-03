@@ -18,8 +18,8 @@ public class Slot {
     public static int getIntakeSlot(double pos){
         pos = pos - Spindexer.intakeStartPos;
         pos = pos / Spindexer.degreesToTicks(slotOffset);
-        int slot = (int) Math.round(pos);
-        if (slot > 3){
+        int slot = Math.abs((int) Math.round(pos));
+        if (slot >= 3){
             slot = slot % 2 - 1;
         }
         return slot;
