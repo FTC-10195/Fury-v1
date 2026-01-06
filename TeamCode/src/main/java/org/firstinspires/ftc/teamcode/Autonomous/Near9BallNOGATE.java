@@ -50,8 +50,8 @@ public class Near9BallNOGATE extends LinearOpMode {
 
     public void buildPaths() {
 
-        final Pose startPose = new Pose(calculateX(57.2836845026299), 135.4077434731531, Math.toRadians(90)); // Start Pose of our robot.
-        final Pose shootPose = new Pose(calculateX(59.30539192071153), 120.07646221936741, Math.toRadians(90));
+        final Pose startPose = new Pose(calculateX(23.29881309567075), 124.73300822353131, calculateHeading(145)); // Start Pose of our robot.
+        final Pose shootPose = new Pose(calculateX(59.30539192071153), 120.07646221936741, calculateHeading(145));
         final Pose intakeFirstPose = new Pose(calculateX(43), 85, calculateHeading(180));
         final Pose intakeFirst2Pose = new Pose(calculateX(20), intakeFirstPose.getY(),calculateHeading(180));
         final Pose shootPose2 = new Pose(calculateX(50.54415658093797), 86.70499243570347, calculateHeading(180));
@@ -71,7 +71,7 @@ public class Near9BallNOGATE extends LinearOpMode {
                                 shootPose
                         )
                 )
-                .setGlobalConstantHeadingInterpolation(calculateHeading(90))
+                .setGlobalConstantHeadingInterpolation(calculateHeading(145))
                 .build();
         intakeFirst = follower.pathBuilder()
                 .addPath(
@@ -80,7 +80,7 @@ public class Near9BallNOGATE extends LinearOpMode {
                                 intakeFirstPose
                         )
                 )
-                .setLinearHeadingInterpolation(calculateHeading(90), calculateHeading(180))
+                .setLinearHeadingInterpolation(calculateHeading(145), calculateHeading(180))
                 .build();
         intakeFirst2 = follower.pathBuilder()
                 .addPath(
@@ -196,7 +196,7 @@ public class Near9BallNOGATE extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Auto path", path);
 
-            limeLight.update();
+            limeLight.update(telemetry);
             spindexer.setMotif(limeLight.getMotif());
             lights.setMotif(limeLight.getMotif());
             followerHandler.update();
@@ -222,7 +222,7 @@ public class Near9BallNOGATE extends LinearOpMode {
             switch (path) {
                 case 0:
                     turret.setState(Turret.States.AIM);
-                    path += command.follow(750, shootPrescore);
+                    path += command.follow(1500, shootPrescore);
                     flywheel.setState(Flywheel.States.SPINNING);
                     break;
                 case 1:
@@ -241,7 +241,7 @@ public class Near9BallNOGATE extends LinearOpMode {
                     path += command.follow(4000,intakeFirst2, .45);
                     command.startIntaking();
                 case 4:
-                    path += command.delay(750);
+                    path += command.delay(250);
                     if (command.completed()) {
                         flywheel.setState(Flywheel.States.SPINNING);
                     }

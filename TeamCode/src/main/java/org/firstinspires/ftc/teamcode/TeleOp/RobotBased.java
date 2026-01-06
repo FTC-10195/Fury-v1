@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -53,6 +54,8 @@ public class RobotBased extends LinearOpMode {
         LimeLight limeLight = new LimeLight();
         limeLight.initiate(hardwareMap);
 
+        TelemetryPacket telemetryPacket = new TelemetryPacket(true);
+
         if (isStopRequested()) {
             lights.reset();
             return;
@@ -93,7 +96,7 @@ public class RobotBased extends LinearOpMode {
                 switch (turret.getState()){
                     case RESET:
                         turret.setState(Turret.States.AIM);
-                        followerHandler.forceRelocalize(lights.getTeamColor());
+                        followerHandler.setPose(limeLight.relocalize(followerHandler.getFollower().getPose()));
                         break;
                     case AIM:
                         turret.setState(Turret.States.RESET);
@@ -167,13 +170,13 @@ public class RobotBased extends LinearOpMode {
             if (square) {
                 hold = !hold;
                 if (hold){
-                    holdPose = follower.getPose();
+                    holdPose = followerHandler.getFollower().getPose();
                     followerHandler.setBrakeMode();
 
-                    follower.updateConstants();
-                    follower.holdPoint(holdPose);
+                    followerHandler.getFollower().updateConstants();
+                    followerHandler.getFollower().holdPoint(holdPose);
                 }else{
-                    follower.breakFollowing();
+                    followerHandler.getFollower().breakFollowing();
                 }
             }
             if (triangle) {
@@ -194,11 +197,11 @@ public class RobotBased extends LinearOpMode {
             spindexer.setMotif(limeLight.getMotif());
 
             turret.setGoal(lights.getTeamColor());
-            turret.setPose(follower.getPose());
+            turret.setPose(followerHandler.getFollower().getPose());
 
             flywheel.setDefaultVelocity();
 
-            limeLight.update();
+            limeLight.update(telemetry);
 
 
             flywheel.update();
@@ -216,11 +219,10 @@ public class RobotBased extends LinearOpMode {
             telemetry.addData("Hold", hold);
             telemetry.addData("HoldPose",holdPose);
 
-            telemetry.addData("X", follower.getPose().getX());
-            telemetry.addData("Y", follower.getPose().getY());
-            telemetry.addData("Heading", follower.getPose().getHeading());
+            telemetry.addData("X", followerHandler.getFollower().getPose().getX());
+            telemetry.addData("Y", followerHandler.getFollower().getPose().getY());
+            telemetry.addData("Heading", followerHandler.getFollower().getPose().getHeading());
 
-            limeLight.status(telemetry);
 
             lights.setBall(spindexer.getSensors().getBallColor());
 
@@ -230,6 +232,9 @@ public class RobotBased extends LinearOpMode {
             flywheel.status(telemetry);
             turret.status(telemetry);
             telemetry.update();
+
+            limeLight.ftcDashUpdate(telemetryPacket);
+
         }
         lights.reset();
     }

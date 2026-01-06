@@ -211,7 +211,7 @@ public class Near9Ball extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Auto path", path);
 
-            limeLight.update();
+            limeLight.update(telemetry);
             spindexer.setMotif(limeLight.getMotif());
             lights.setMotif(limeLight.getMotif());
             followerHandler.update();

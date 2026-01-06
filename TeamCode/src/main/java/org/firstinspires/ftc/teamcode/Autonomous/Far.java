@@ -186,14 +186,12 @@ public class Far extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Auto path", path);
 
-            limeLight.update();
+            limeLight.update(telemetry);
             spindexer.setMotif(limeLight.getMotif());
             lights.setMotif(limeLight.getMotif());
             followerHandler.update();
             followerHandler.save();
-            turret.setPose(follower.getPose());
-            turret.setGoal(lights.getTeamColor());
-            turret.update();
+
 
             flywheel.setTargetVelocity(2000);
             flywheel.update();
@@ -253,6 +251,7 @@ public class Far extends LinearOpMode {
                     path += command.follow(1800, shoot2);
                     if (command.getTimePassed() > 500 && spindexer.getState() != Spindexer.States.CHAMBER) {
                         command.stopIntaking();
+                        flywheel.setState(Flywheel.States.SPINNING);
                         spindexer.setMode(Spindexer.Modes.SORTED);
                         spindexer.setState(Spindexer.States.CHAMBER);
                     }
@@ -294,8 +293,22 @@ public class Far extends LinearOpMode {
                     path += command.follow(1800, shoot2);
                     if (command.getTimePassed() > 500 && spindexer.getState() != Spindexer.States.CHAMBER) {
                         command.stopIntaking();
+                        flywheel.setState(Flywheel.States.SPINNING);
                         spindexer.setMode(Spindexer.Modes.SORTED);
                         spindexer.setState(Spindexer.States.CHAMBER);
+                    }
+                    break;
+                case 13:
+                    path += command.shoot();
+                    if (command.completed()) {
+                        flywheel.setState(Flywheel.States.RESTING);
+                        spindexer.setMode(Spindexer.Modes.SORTED);
+                    }
+                    break;
+                case 14:
+                    path += command.follow(1500, intakeFirst);
+                    if (spindexer.getKicker().getState() == Kicker.States.RESTING){
+                        command.resetSpindexer();
                     }
                     break;
             }

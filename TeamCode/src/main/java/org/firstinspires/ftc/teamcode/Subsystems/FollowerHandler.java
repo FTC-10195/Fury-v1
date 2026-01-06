@@ -63,7 +63,7 @@ public class FollowerHandler {
     //For relocalization
     public void setPose(Pose newPose){
         pose = newPose;
-        load();
+        follower.setPose(pose);
     }
     public void setStartingPose(Pose newPose){
         pose = newPose;
